@@ -26,7 +26,7 @@ export default function Page() {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
 
-    const res = await fetch("http://localhost:5000/submit", {
+    const res = await fetch("https://jobblixor-backend-current.onrender.com/submit", {
       method: "POST",
       body: formData,
     });
