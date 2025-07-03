@@ -11,34 +11,52 @@ export default function Page() {
   const [applicationCount, setApplicationCount] = useState<number | null>(null);
   const [checking, setChecking] = useState(false);
   const [checkError, setCheckError] = useState('');
-
   const [dashboardEmail, setDashboardEmail] = useState('');
   const [dashboardResults, setDashboardResults] = useState<Record<string, unknown>[] | null>(null);
   const [checkingDashboard, setCheckingDashboard] = useState(false);
 
+  // NEW: Response Viewer + submitting state
+  const [responseViewer, setResponseViewer] = useState<string[]>([]);
+  const [submitting, setSubmitting] = useState(false);
+
+  // Dummy/mock data for dashboard
   const mockApplications = [
     { jobTitle: 'Frontend Developer', company: 'TechCorp', link: 'https://example.com/job1' },
     { jobTitle: 'UX Designer', company: 'Designify', link: 'https://example.com/job2' },
     { jobTitle: 'Backend Engineer', company: 'APILogic', link: 'https://example.com/job3' }
   ];
 
+  // FORM SUBMISSION WITH RESPONSE VIEWER
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setSubmitting(true);
+    setResponseViewer(["Submitting your info..."]);
     const formData = new FormData(e.currentTarget);
 
-    const res = await fetch("https://jobblixor-backend-current.onrender.com/submit", {
-      method: "POST",
-      body: formData,
-    });
-
-    const result = await res.json();
-    if (result.status === 'success') {
-      alert("✅ Info submitted! Check your email for results soon.");
-    } else {
-      alert("❌ " + result.message);
+    try {
+      const res = await fetch("https://jobblixor-backend-current.onrender.com/submit", {
+        method: "POST",
+        body: formData,
+      });
+      const result = await res.json();
+      if (result.status === 'success') {
+        setResponseViewer([
+          "✅ Application process started!",
+          ...(result.log || []),
+          result.applicationsLeft !== undefined
+            ? `You have ${result.applicationsLeft} applications left.`
+            : ""
+        ]);
+      } else {
+        setResponseViewer(["❌ " + (result.message || "Something went wrong.")]);
+      }
+    } catch (err) {
+      setResponseViewer(["❌ Failed to connect to backend. Please try again later."]);
     }
+    setSubmitting(false);
   };
 
+  // (no changes to dashboard/check tabs)
   const handleCheckApplications = () => {
     setChecking(true);
     setCheckError('');
@@ -47,7 +65,6 @@ export default function Page() {
       setChecking(false);
     }, 1000);
   };
-
   const handleDashboardLookup = () => {
     setCheckingDashboard(true);
     setDashboardResults(null);
@@ -90,6 +107,7 @@ export default function Page() {
             </p>
           </section>
 
+          {/* --- FORM WITH SUBMITTING AND LOG OUTPUT --- */}
           <section className="bg-white/20 backdrop-blur-lg rounded-2xl p-8 w-full max-w-4xl mt-6 text-black shadow-xl">
             <h2 className="text-2xl font-bold text-white text-center mb-2">Automated Job Application Console</h2>
             <p className="text-center text-white mb-6">Enter your information and our AI bot will apply to jobs for you</p>
@@ -111,7 +129,6 @@ export default function Page() {
                   <input name={name} type={type} placeholder={placeholder} className="w-full p-3 rounded-lg bg-blue-100 text-black" />
                 </div>
               ))}
-
               <div>
                 <label className="block text-white mb-1">Resume (PDF)</label>
                 <input name="resume" type="file" accept="application/pdf" className="w-full p-3 rounded-lg bg-blue-100 text-black" />
@@ -120,10 +137,13 @@ export default function Page() {
                 <label className="block text-white mb-1">Profile Photo</label>
                 <input name="profilePhoto" type="file" accept="image/*" className="w-full p-3 rounded-lg bg-blue-100 text-black" />
               </div>
-
               <div className="md:col-span-2 flex justify-center">
-                <button type="submit" className="mt-4 bg-blue-800 text-white px-8 py-3 rounded-xl shadow-lg hover:bg-blue-900">
-                  Start Applying
+                <button
+                  type="submit"
+                  className="mt-4 bg-blue-800 text-white px-8 py-3 rounded-xl shadow-lg hover:bg-blue-900"
+                  disabled={submitting}
+                >
+                  {submitting ? "Submitting..." : "Start Applying"}
                 </button>
               </div>
             </form>
@@ -132,8 +152,11 @@ export default function Page() {
           <section className="mt-10 w-full max-w-4xl p-6 bg-white/10 backdrop-blur-md rounded-xl text-white">
             <h3 className="text-lg font-semibold mb-2">Response Viewer</h3>
             <p className="text-sm mb-2">View job application results from the automated process</p>
-            <div className="bg-gray-100 text-gray-800 p-4 rounded-lg">
-              <code>Response will appear here after applying to jobs</code>
+            <div className="bg-gray-100 text-gray-800 p-4 rounded-lg whitespace-pre-line max-h-96 overflow-auto">
+              {responseViewer.length === 0
+                ? <code>Response will appear here after applying to jobs</code>
+                : responseViewer.map((line, i) => <div key={i}>{line}</div>)
+              }
             </div>
           </section>
 
