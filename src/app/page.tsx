@@ -51,10 +51,11 @@ export default function Page() {
         setResponseViewer(["❌ " + (result.message || "Something went wrong.")]);
       }
     } catch (err) {
-      setResponseViewer(["❌ Failed to connect to backend. Please try again later."]);
-    }
-    setSubmitting(false);
-  };
+    setResponseViewer(["❌ Failed to connect to backend. Please try again later."]);
+    console.error(err); // <--- This line fixes your build!
+  }
+  setSubmitting(false);
+};
 
   // (no changes to dashboard/check tabs)
   const handleCheckApplications = () => {
