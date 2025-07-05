@@ -52,7 +52,7 @@ export default function Page() {
       }
     } catch (err) {
     setResponseViewer(["❌ Failed to connect to backend. Please try again later."]);
-    console.error(err); // <--- This line fixes your build!
+    console.error(err); 
   }
   setSubmitting(false);
 };
