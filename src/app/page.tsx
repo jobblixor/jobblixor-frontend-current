@@ -47,6 +47,12 @@ export default function Page() {
             ? `You have ${result.applicationsLeft} applications left.`
             : ""
         ]);
+        // NEW: Save the user's email to localStorage for Chrome extension
+        const formEmail = (formData.get('email') as string)?.trim();
+        if (formEmail) {
+          localStorage.setItem("email", formEmail);
+          console.log("Jobblixor: Saved email to localStorage:", formEmail);
+        }
       } else {
         setResponseViewer(["❌ " + (result.message || "Something went wrong.")]);
       }
@@ -258,4 +264,5 @@ export default function Page() {
     </div>
   );
 }
+
 
