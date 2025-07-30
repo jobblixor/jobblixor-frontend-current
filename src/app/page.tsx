@@ -3,6 +3,24 @@
 import React, { useState, FormEvent } from "react";
 import Image from 'next/image';
 
+// --- NEW: Firebase imports ---
+import { initializeApp } from 'firebase/app';
+import { getFirestore, doc, setDoc } from 'firebase/firestore';
+
+// --- INSERT YOUR FIREBASE CONFIG BELOW ---
+const firebaseConfig = {
+  apiKey: "AIzaSyDwXqhRgDxWh3KMHvxcxBRy6L4h5imUIqo",
+  authDomain: "jobblixor2.firebaseapp.com",
+  projectId: "jobblixor2",
+  storageBucket: "jobblixor2.appspot.com",
+  messagingSenderId: "437887766629",
+  appId: "1:437887766629:web:882a686065fd6db189f68c"
+};
+// --- END FIREBASE CONFIG ---
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
 export default function Page() {
   const tabs = ['home', 'dashboard', 'subscriptions', 'check', 'about'] as const;
   type TabType = typeof tabs[number];
@@ -26,39 +44,41 @@ export default function Page() {
     { jobTitle: 'Backend Engineer', company: 'APILogic', link: 'https://example.com/job3' }
   ];
 
-  // FORM SUBMISSION WITH RESPONSE VIEWER
+  // --- FORM SUBMISSION: Save to Firebase + localStorage ---
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setSubmitting(true);
     setResponseViewer(["Submitting your info..."]);
+
     const formData = new FormData(e.currentTarget);
 
-    try {
-      const res = await fetch("https://jobblixor-backend-current.onrender.com/submit", {
-        method: "POST",
-        body: formData,
-      });
-      const result = await res.json();
-      if (result.status === 'success') {
-        setResponseViewer([
-          "✅ Application process started!",
-          ...(result.log || []),
-          result.applicationsLeft !== undefined
-            ? `You have ${result.applicationsLeft} applications left.`
-            : ""
-        ]);
-        // NEW: Save the user's email to localStorage for Chrome extension
-        const formEmail = (formData.get('email') as string)?.trim();
-        if (formEmail) {
-          localStorage.setItem("email", formEmail);
-          console.log("Jobblixor: Saved email to localStorage:", formEmail);
-        }
-      } else {
-        setResponseViewer(["❌ " + (result.message || "Something went wrong.")]);
-      }
-    } catch {
-      setResponseViewer(["❌ Failed to connect to backend. Please try again later."]);
+    // Extract user data from form
+    const userData: Record<string, any> = {};
+    formData.forEach((value, key) => {
+      userData[key] = value;
+    });
+    const formEmail = (formData.get('email') as string)?.trim();
+
+    if (!formEmail) {
+      setResponseViewer(["❌ Please enter a valid email."]);
+      setSubmitting(false);
+      return;
     }
+
+    try {
+      // Save to Firestore
+      await setDoc(doc(db, "users", formEmail), userData);
+      // Save email to localStorage (for Chrome extension)
+      localStorage.setItem("email", formEmail);
+      setResponseViewer([
+        "✅ Info saved to Jobblixor! You're ready to use the Chrome Extension.",
+        "You can now head to Indeed and start auto-applying!"
+      ]);
+      console.log("Jobblixor: Saved email to localStorage:", formEmail);
+    } catch (error) {
+      setResponseViewer(["❌ Failed to save info to Jobblixor. Try again."]);
+    }
+
     setSubmitting(false);
   };
 
@@ -67,7 +87,7 @@ export default function Page() {
     setChecking(true);
     setCheckError('');
     setTimeout(() => {
-      setApplicationCount(3);
+      setApplicationCount(3); // Just mock data for now
       setChecking(false);
     }, 1000);
   };
