@@ -53,7 +53,7 @@ export default function Page() {
     const formData = new FormData(e.currentTarget);
 
     // Extract user data from form
-    const userData: Record<string, any> = {};
+    const userData: Record<string, string> = {};
     formData.forEach((value, key) => {
       userData[key] = value;
     });
@@ -76,6 +76,7 @@ export default function Page() {
       ]);
       console.log("Jobblixor: Saved email to localStorage:", formEmail);
     } catch (error) {
+      console.error(error);
       setResponseViewer(["❌ Failed to save info to Jobblixor. Try again."]);
     }
 
