@@ -6,6 +6,8 @@ import Image from 'next/image';
 // --- NEW: Firebase imports ---
 import { initializeApp } from 'firebase/app';
 import { getFirestore, doc, setDoc } from 'firebase/firestore';
+import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
+
 
 // --- INSERT YOUR FIREBASE CONFIG BELOW ---
 const firebaseConfig = {
@@ -46,42 +48,59 @@ export default function Page() {
 
   // --- FORM SUBMISSION: Save to Firebase + localStorage ---
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setSubmitting(true);
-    setResponseViewer(["Submitting your info..."]);
+  e.preventDefault();
+  setSubmitting(true);
+  setResponseViewer(["Submitting your info..."]);
 
-    const formData = new FormData(e.currentTarget);
+  const formData = new FormData(e.currentTarget);
 
-    // Extract user data from form
-    const userData: Record<string, string> = {};
-    formData.forEach((value, key) => {
+  // Extract user data
+  const userData: Record<string, any> = {};
+  formData.forEach((value, key) => {
+    // Don't add file objects directly yet
+    if (key !== "resume") {
       userData[key] = value;
-    });
-    const formEmail = (formData.get('email') as string)?.trim();
-
-    if (!formEmail) {
-      setResponseViewer(["❌ Please enter a valid email."]);
-      setSubmitting(false);
-      return;
     }
+  });
+  const formEmail = (formData.get("email") as string)?.trim();
 
-    try {
-      // Save to Firestore
-      await setDoc(doc(db, "users", formEmail), userData);
-      // Save email to localStorage (for Chrome extension)
-      localStorage.setItem("email", formEmail);
-      setResponseViewer([
-        "✅ Info saved to Jobblixor! You're ready to use the Chrome Extension.",
-        "You can now head to Indeed and start auto-applying!"
-      ]);
-      console.log("Jobblixor: Saved email to localStorage:", formEmail);
-    } catch (error) {
-      console.error(error);
-      setResponseViewer(["❌ Failed to save info to Jobblixor. Try again."]);
-    }
-
+  if (!formEmail) {
+    setResponseViewer(["❌ Please enter a valid email."]);
     setSubmitting(false);
-  };
+    return;
+  }
+
+  try {
+    // --- RESUME UPLOAD LOGIC ---
+    const resumeFile = formData.get("resume") as File | null;
+    let resumeUrl = "";
+    if (resumeFile && resumeFile.size > 0) {
+      const storage = getStorage(app);
+      const storageRef = ref(storage, `resumes/${formEmail}/${resumeFile.name}`);
+      await uploadBytes(storageRef, resumeFile);
+      resumeUrl = await getDownloadURL(storageRef);
+    }
+    // Add the download URL to userData (even if empty string)
+    userData["resume"] = resumeUrl;
+
+    // Save all data to Firestore
+    await setDoc(doc(db, "users", formEmail), userData);
+
+    // Save email to localStorage for Chrome extension
+    localStorage.setItem("email", formEmail);
+
+    setResponseViewer([
+      "✅ Info saved to Jobblixor! Resume uploaded. You're ready to use the Chrome Extension.",
+      "You can now head to Indeed and start auto-applying!"
+    ]);
+    console.log("Jobblixor: Saved email to localStorage:", formEmail);
+  } catch (error) {
+    setResponseViewer(["❌ Failed to save info or upload resume. Try again."]);
+    console.error(error);
+  }
+
+  setSubmitting(false);
+};
 
   // (no changes to dashboard/check tabs)
   const handleCheckApplications = () => {
