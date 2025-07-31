@@ -55,6 +55,7 @@ export default function Page() {
   const formData = new FormData(e.currentTarget);
 
   // Extract user data
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const userData: Record<string, any> = {};
   formData.forEach((value, key) => {
     // Don't add file objects directly yet
