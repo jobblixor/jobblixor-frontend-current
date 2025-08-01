@@ -54,6 +54,7 @@ export default function Page() {
 
   const formData = new FormData(e.currentTarget);
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const userData: Record<string, any> = {};
   formData.forEach((value, key) => {
     // Exclude file inputs because we upload them separately
