@@ -54,17 +54,15 @@ export default function Page() {
 
   const formData = new FormData(e.currentTarget);
 
-  // Extract user data
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const userData: Record<string, any> = {};
   formData.forEach((value, key) => {
-    // Don't add file objects directly yet
-    if (key !== "resume") {
+    // Exclude file inputs because we upload them separately
+    if (key !== "resume" && key !== "profilePhoto") {
       userData[key] = value;
     }
   });
-  const formEmail = (formData.get("email") as string)?.trim();
 
+  const formEmail = (formData.get("email") as string)?.trim();
   if (!formEmail) {
     setResponseViewer(["❌ Please enter a valid email."]);
     setSubmitting(false);
@@ -72,17 +70,27 @@ export default function Page() {
   }
 
   try {
-    // --- RESUME UPLOAD LOGIC ---
+    const storage = getStorage(app);
+
+    // Upload resume file
     const resumeFile = formData.get("resume") as File | null;
     let resumeUrl = "";
     if (resumeFile && resumeFile.size > 0) {
-      const storage = getStorage(app);
-      const storageRef = ref(storage, `resumes/${formEmail}/${resumeFile.name}`);
-      await uploadBytes(storageRef, resumeFile);
-      resumeUrl = await getDownloadURL(storageRef);
+      const resumeRef = ref(storage, `resumes/${formEmail}/${resumeFile.name}`);
+      await uploadBytes(resumeRef, resumeFile);
+      resumeUrl = await getDownloadURL(resumeRef);
     }
-    // Add the download URL to userData (even if empty string)
     userData["resume"] = resumeUrl;
+
+    // Upload profile photo file
+    const profilePhotoFile = formData.get("profilePhoto") as File | null;
+    let profilePhotoUrl = "";
+    if (profilePhotoFile && profilePhotoFile.size > 0) {
+      const photoRef = ref(storage, `profilePhotos/${formEmail}/${profilePhotoFile.name}`);
+      await uploadBytes(photoRef, profilePhotoFile);
+      profilePhotoUrl = await getDownloadURL(photoRef);
+    }
+    userData["profilePhoto"] = profilePhotoUrl;
 
     // Save all data to Firestore
     await setDoc(doc(db, "users", formEmail), userData);
@@ -91,12 +99,12 @@ export default function Page() {
     localStorage.setItem("email", formEmail);
 
     setResponseViewer([
-      "✅ Info saved to Jobblixor! Resume uploaded. You're ready to use the Chrome Extension.",
+      "✅ Info saved to Jobblixor! Resume and profile photo uploaded.",
       "You can now head to Indeed and start auto-applying!"
     ]);
     console.log("Jobblixor: Saved email to localStorage:", formEmail);
   } catch (error) {
-    setResponseViewer(["❌ Failed to save info or upload resume. Try again."]);
+    setResponseViewer(["❌ Failed to save info or upload files. Try again."]);
     console.error(error);
   }
 
