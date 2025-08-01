@@ -14,7 +14,7 @@ const firebaseConfig = {
   apiKey: "AIzaSyDwXqhRgDxWh3KMHvxcxBRy6L4h5imUIqo",
   authDomain: "jobblixor2.firebaseapp.com",
   projectId: "jobblixor2",
-  storageBucket: "jobblixor2.appspot.com",
+  storageBucket: "jobblixor2.firebasestorage.app",
   messagingSenderId: "437887766629",
   appId: "1:437887766629:web:882a686065fd6db189f68c"
 };
