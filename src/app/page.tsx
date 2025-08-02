@@ -47,69 +47,80 @@ export default function Page() {
 
   // --- FORM SUBMISSION: Save to Firebase + localStorage ---
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setSubmitting(true);
-    setResponseViewer(["Submitting your info..."]);
+  e.preventDefault();
+  setSubmitting(true);
+  setResponseViewer(["Submitting your info..."]);
 
-    const formData = new FormData(e.currentTarget);
+  const formData = new FormData(e.currentTarget);
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const userData: Record<string, any> = {};
-    formData.forEach((value, key) => {
-      // Exclude file inputs because we upload them separately
-      if (key !== "resume" && key !== "profilePhoto") {
-        userData[key] = value;
-      }
-    });
-
-    const formEmail = (formData.get("email") as string)?.trim();
-    if (!formEmail) {
-      setResponseViewer(["❌ Please enter a valid email."]);
-      setSubmitting(false);
-      return;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const userData: Record<string, any> = {};
+  formData.forEach((value, key) => {
+    // Exclude file inputs because we upload them separately
+    if (key !== "resume" && key !== "profilePhoto") {
+      userData[key] = value;
     }
+  });
 
-    try {
-      const storage = getStorage(app);
-
-      // Upload resume file
-      const resumeFile = formData.get("resume") as File | null;
-      let resumeUrl = "";
-      if (resumeFile && resumeFile.size > 0) {
-        const resumeRef = ref(storage, `resumes/${formEmail}/${resumeFile.name}`);
-        await uploadBytes(resumeRef, resumeFile);
-        resumeUrl = await getDownloadURL(resumeRef);
-      }
-      userData["resume"] = resumeUrl;
-
-      // Upload profile photo file
-      const profilePhotoFile = formData.get("profilePhoto") as File | null;
-      let profilePhotoUrl = "";
-      if (profilePhotoFile && profilePhotoFile.size > 0) {
-        const photoRef = ref(storage, `profilePhotos/${formEmail}/${profilePhotoFile.name}`);
-        await uploadBytes(photoRef, profilePhotoFile);
-        profilePhotoUrl = await getDownloadURL(photoRef);
-      }
-      userData["profilePhoto"] = profilePhotoUrl;
-
-      // Save all data to Firestore
-      await setDoc(doc(db, "users", formEmail), userData);
-
-      // Save email to localStorage for Chrome extension
-      localStorage.setItem("email", formEmail);
-
-      setResponseViewer([
-        "✅ Info saved to Jobblixor! Resume and profile photo uploaded.",
-        "You can now head to Indeed and start auto-applying!"
-      ]);
-      console.log("Jobblixor: Saved email to localStorage:", formEmail);
-    } catch (error) {
-      setResponseViewer(["❌ Failed to save info or upload files. Try again."]);
-      console.error(error);
-    }
-
+  const formEmail = (formData.get("email") as string)?.trim();
+  if (!formEmail) {
+    setResponseViewer(["❌ Please enter a valid email."]);
     setSubmitting(false);
-  };
+    return;
+  }
+
+  try {
+    const storage = getStorage(app);
+
+    // Upload resume file
+    const resumeFile = formData.get("resume") as File | null;
+    let resumeUrl = "";
+    if (resumeFile && resumeFile.size > 0) {
+      const resumeRef = ref(storage, `resumes/${formEmail}/${resumeFile.name}`);
+      await uploadBytes(resumeRef, resumeFile);
+      resumeUrl = await getDownloadURL(resumeRef);
+    }
+    userData["resume"] = resumeUrl;
+
+    // Upload profile photo file
+    const profilePhotoFile = formData.get("profilePhoto") as File | null;
+    let profilePhotoUrl = "";
+    if (profilePhotoFile && profilePhotoFile.size > 0) {
+      const photoRef = ref(storage, `profilePhotos/${formEmail}/${profilePhotoFile.name}`);
+      await uploadBytes(photoRef, profilePhotoFile);
+      profilePhotoUrl = await getDownloadURL(photoRef);
+    }
+    userData["profilePhoto"] = profilePhotoUrl;
+
+    // --- SYSTEM FIELDS (added automatically, not from user input) ---
+    const nowIso = new Date().toISOString();
+    userData.application_count = 0;
+    userData.created_at = nowIso;
+    userData.free_uses_left = 5; // You can change this default!
+    userData.plan_id = "free";
+    userData.subscription_status = "active";
+    userData.updated_at = nowIso;
+    userData.password_hash = null; // Only set if you hash passwords elsewhere
+    userData.stripe_customer_id = null; // Will be set by Stripe integration
+
+    // Save all data to Firestore
+    await setDoc(doc(db, "users", formEmail), userData);
+
+    // Save email to localStorage for Chrome extension
+    localStorage.setItem("email", formEmail);
+
+    setResponseViewer([
+      "✅ Info saved to Jobblixor! Resume and profile photo uploaded.",
+      "You can now head to Indeed and start auto-applying!"
+    ]);
+    console.log("Jobblixor: Saved email to localStorage:", formEmail);
+  } catch (error) {
+    setResponseViewer(["❌ Failed to save info or upload files. Try again."]);
+    console.error(error);
+  }
+
+  setSubmitting(false);
+};
 
   // (no changes to dashboard/check tabs)
   const handleCheckApplications = () => {
