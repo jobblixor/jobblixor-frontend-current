@@ -8,7 +8,6 @@ import { initializeApp } from 'firebase/app';
 import { getFirestore, doc, setDoc } from 'firebase/firestore';
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
-
 // --- INSERT YOUR FIREBASE CONFIG BELOW ---
 const firebaseConfig = {
   apiKey: "AIzaSyDwXqhRgDxWh3KMHvxcxBRy6L4h5imUIqo",
@@ -48,69 +47,69 @@ export default function Page() {
 
   // --- FORM SUBMISSION: Save to Firebase + localStorage ---
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
-  e.preventDefault();
-  setSubmitting(true);
-  setResponseViewer(["Submitting your info..."]);
+    e.preventDefault();
+    setSubmitting(true);
+    setResponseViewer(["Submitting your info..."]);
 
-  const formData = new FormData(e.currentTarget);
+    const formData = new FormData(e.currentTarget);
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const userData: Record<string, any> = {};
-  formData.forEach((value, key) => {
-    // Exclude file inputs because we upload them separately
-    if (key !== "resume" && key !== "profilePhoto") {
-      userData[key] = value;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const userData: Record<string, any> = {};
+    formData.forEach((value, key) => {
+      // Exclude file inputs because we upload them separately
+      if (key !== "resume" && key !== "profilePhoto") {
+        userData[key] = value;
+      }
+    });
+
+    const formEmail = (formData.get("email") as string)?.trim();
+    if (!formEmail) {
+      setResponseViewer(["❌ Please enter a valid email."]);
+      setSubmitting(false);
+      return;
     }
-  });
 
-  const formEmail = (formData.get("email") as string)?.trim();
-  if (!formEmail) {
-    setResponseViewer(["❌ Please enter a valid email."]);
+    try {
+      const storage = getStorage(app);
+
+      // Upload resume file
+      const resumeFile = formData.get("resume") as File | null;
+      let resumeUrl = "";
+      if (resumeFile && resumeFile.size > 0) {
+        const resumeRef = ref(storage, `resumes/${formEmail}/${resumeFile.name}`);
+        await uploadBytes(resumeRef, resumeFile);
+        resumeUrl = await getDownloadURL(resumeRef);
+      }
+      userData["resume"] = resumeUrl;
+
+      // Upload profile photo file
+      const profilePhotoFile = formData.get("profilePhoto") as File | null;
+      let profilePhotoUrl = "";
+      if (profilePhotoFile && profilePhotoFile.size > 0) {
+        const photoRef = ref(storage, `profilePhotos/${formEmail}/${profilePhotoFile.name}`);
+        await uploadBytes(photoRef, profilePhotoFile);
+        profilePhotoUrl = await getDownloadURL(photoRef);
+      }
+      userData["profilePhoto"] = profilePhotoUrl;
+
+      // Save all data to Firestore
+      await setDoc(doc(db, "users", formEmail), userData);
+
+      // Save email to localStorage for Chrome extension
+      localStorage.setItem("email", formEmail);
+
+      setResponseViewer([
+        "✅ Info saved to Jobblixor! Resume and profile photo uploaded.",
+        "You can now head to Indeed and start auto-applying!"
+      ]);
+      console.log("Jobblixor: Saved email to localStorage:", formEmail);
+    } catch (error) {
+      setResponseViewer(["❌ Failed to save info or upload files. Try again."]);
+      console.error(error);
+    }
+
     setSubmitting(false);
-    return;
-  }
-
-  try {
-    const storage = getStorage(app);
-
-    // Upload resume file
-    const resumeFile = formData.get("resume") as File | null;
-    let resumeUrl = "";
-    if (resumeFile && resumeFile.size > 0) {
-      const resumeRef = ref(storage, `resumes/${formEmail}/${resumeFile.name}`);
-      await uploadBytes(resumeRef, resumeFile);
-      resumeUrl = await getDownloadURL(resumeRef);
-    }
-    userData["resume"] = resumeUrl;
-
-    // Upload profile photo file
-    const profilePhotoFile = formData.get("profilePhoto") as File | null;
-    let profilePhotoUrl = "";
-    if (profilePhotoFile && profilePhotoFile.size > 0) {
-      const photoRef = ref(storage, `profilePhotos/${formEmail}/${profilePhotoFile.name}`);
-      await uploadBytes(photoRef, profilePhotoFile);
-      profilePhotoUrl = await getDownloadURL(photoRef);
-    }
-    userData["profilePhoto"] = profilePhotoUrl;
-
-    // Save all data to Firestore
-    await setDoc(doc(db, "users", formEmail), userData);
-
-    // Save email to localStorage for Chrome extension
-    localStorage.setItem("email", formEmail);
-
-    setResponseViewer([
-      "✅ Info saved to Jobblixor! Resume and profile photo uploaded.",
-      "You can now head to Indeed and start auto-applying!"
-    ]);
-    console.log("Jobblixor: Saved email to localStorage:", formEmail);
-  } catch (error) {
-    setResponseViewer(["❌ Failed to save info or upload files. Try again."]);
-    console.error(error);
-  }
-
-  setSubmitting(false);
-};
+  };
 
   // (no changes to dashboard/check tabs)
   const handleCheckApplications = () => {
@@ -185,6 +184,86 @@ export default function Page() {
                   <input name={name} type={type} placeholder={placeholder} className="w-full p-3 rounded-lg bg-blue-100 text-black" />
                 </div>
               ))}
+
+              {/* New fields for extra employer questions */}
+              <div>
+                <label className="block text-white mb-1">Are you over 18?</label>
+                <select name="over_18" className="w-full p-3 rounded-lg bg-blue-100 text-black">
+                  <option value="">Select</option>
+                  <option value="yes">Yes</option>
+                  <option value="no">No</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-white mb-1">Authorized to work in the US?</label>
+                <select name="authorized_us" className="w-full p-3 rounded-lg bg-blue-100 text-black">
+                  <option value="">Select</option>
+                  <option value="yes">Yes</option>
+                  <option value="no">No</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-white mb-1">Require Sponsorship?</label>
+                <select name="require_sponsorship" className="w-full p-3 rounded-lg bg-blue-100 text-black">
+                  <option value="">Select</option>
+                  <option value="yes">Yes</option>
+                  <option value="no">No</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-white mb-1">Gender</label>
+                <select name="gender" className="w-full p-3 rounded-lg bg-blue-100 text-black">
+                  <option value="">Select</option>
+                  <option value="female">Female</option>
+                  <option value="male">Male</option>
+                  <option value="non_binary">Non-binary</option>
+                  <option value="prefer_not_to_say">Prefer not to say</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-white mb-1">Ethnicity</label>
+                <select name="ethnicity" className="w-full p-3 rounded-lg bg-blue-100 text-black">
+                  <option value="">Select</option>
+                  <option value="not_declared">Not Declared</option>
+                  <option value="asian">Asian</option>
+                  <option value="black">Black or African American</option>
+                  <option value="hispanic">Hispanic or Latino</option>
+                  <option value="white">White</option>
+                  <option value="native">Native American</option>
+                  <option value="pacific">Pacific Islander</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-white mb-1">Years of Experience</label>
+                <select name="years_experience" className="w-full p-3 rounded-lg bg-blue-100 text-black">
+                  <option value="">Select</option>
+                  <option value="0">0</option>
+                  <option value="1+">1+</option>
+                  <option value="2+">2+</option>
+                  <option value="5+">5+</option>
+                  <option value="10+">10+</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-white mb-1">Veteran Status</label>
+                <select name="veteran_status" className="w-full p-3 rounded-lg bg-blue-100 text-black">
+                  <option value="">Select</option>
+                  <option value="no">No</option>
+                  <option value="yes">Yes</option>
+                  <option value="prefer_not_to_say">Prefer not to say</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-white mb-1">Answer Diversity Questions, or Always Skip?</label>
+                <select name="answer_diversity_questions" className="w-full p-3 rounded-lg bg-blue-100 text-black">
+                  <option value="">Select</option>
+                  <option value="answer">Answer</option>
+                  <option value="skip">Always Skip</option>
+                </select>
+              </div>
+
+              {/* Existing file upload fields */}
               <div>
                 <label className="block text-white mb-1">Resume (PDF)</label>
                 <input name="resume" type="file" accept="application/pdf" className="w-full p-3 rounded-lg bg-blue-100 text-black" />
