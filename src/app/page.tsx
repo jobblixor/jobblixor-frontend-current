@@ -181,6 +181,7 @@ export default function Page() {
               {[
                 { label: 'Job Title', name: 'job_title', placeholder: 'Software Engineer' },
                 { label: 'Location', name: 'location', placeholder: 'San Francisco, CA' },
+                { label: 'Zip Code', name: 'zip_code', placeholder: '12345' },
                 { label: 'First Name', name: 'first_name', placeholder: 'John' },
                 { label: 'Last Name', name: 'last_name', placeholder: 'Doe' },
                 { label: 'Phone Number', name: 'phone_number', placeholder: '(123) 456-7890' },
