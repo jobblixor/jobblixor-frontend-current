@@ -182,6 +182,7 @@ export default function Page() {
                 { label: 'Job Title', name: 'job_title', placeholder: 'Software Engineer' },
                 { label: 'Location', name: 'location', placeholder: 'San Francisco, CA' },
                 { label: 'Zip Code', name: 'zip_code', placeholder: '12345' },
+                { label: 'Street Address', name: 'street_address', placeholder: '123 Main Street' },
                 { label: 'First Name', name: 'first_name', placeholder: 'John' },
                 { label: 'Last Name', name: 'last_name', placeholder: 'Doe' },
                 { label: 'Phone Number', name: 'phone_number', placeholder: '(123) 456-7890' },
@@ -189,6 +190,9 @@ export default function Page() {
                 { label: 'Password', name: 'password', type: 'password', placeholder: '••••••••' },
                 { label: 'Confirm Password', name: 'confirm_password', type: 'password', placeholder: '••••••••' },
                 { label: 'Preferred Salary', name: 'preferred_salary', placeholder: '120000' },
+                { label: 'Job Title Relevant Experience', name: 'job_title_relevant_experience', placeholder: 'IT Technician' },
+                { label: 'Company Relevant Experience', name: 'company_relevant_experience', placeholder: 'Microsoft' },
+
                 { label: 'Number of Jobs (max 5)', name: 'num_jobs', placeholder: '1' },
               ].map(({ label, name, placeholder, type = 'text' }) => (
                 <div key={name}>
