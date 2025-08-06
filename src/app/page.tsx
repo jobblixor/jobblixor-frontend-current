@@ -108,6 +108,7 @@ export default function Page() {
 
     // Save email to localStorage for Chrome extension
     localStorage.setItem("email", formEmail);
+    localStorage.setItem("autoApply", "true");
 
     setResponseViewer([
       "✅ Info saved to Jobblixor! Resume and profile photo uploaded.",
