@@ -7,6 +7,8 @@ import Image from 'next/image';
 import { initializeApp } from 'firebase/app';
 import { getFirestore, doc, setDoc } from 'firebase/firestore';
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
+const [showAutoApplyModal, setShowAutoApplyModal] = useState(false);
+
 
 // --- INSERT YOUR FIREBASE CONFIG BELOW ---
 const firebaseConfig = {
@@ -108,7 +110,6 @@ export default function Page() {
 
     // Save email to localStorage for Chrome extension
     localStorage.setItem("email", formEmail);
-    localStorage.setItem("autoApply", "true");
     
 
     setResponseViewer([
@@ -116,6 +117,7 @@ export default function Page() {
       "You can now head to Indeed and start auto-applying!"
     ]);
     console.log("Jobblixor: Saved email to localStorage:", formEmail);
+    setShowAutoApplyModal(true); // <-- THIS SHOWS THE MODAL
   } catch (error) {
     setResponseViewer(["❌ Failed to save info or upload files. Try again."]);
     console.error(error);
@@ -408,6 +410,51 @@ export default function Page() {
           </p>
         </section>
       )}
+
+{showAutoApplyModal && (
+  <div style={{
+    position: "fixed",
+    top: 0, left: 0, right: 0, bottom: 0,
+    background: "rgba(0,0,0,0.7)",
+    zIndex: 10000,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center"
+  }}>
+    <div style={{
+      background: "#fff",
+      color: "#222",
+      padding: 32,
+      borderRadius: 12,
+      boxShadow: "0 8px 32px rgba(0,0,0,0.25)",
+      textAlign: "center",
+      maxWidth: 400
+    }}>
+      <h2 style={{ fontSize: 24, fontWeight: "bold", marginBottom: 8 }}>
+        Your info has been saved!
+      </h2>
+      <p style={{ fontSize: 18, marginBottom: 20 }}>
+        Ready to start auto-applying on Indeed?
+      </p>
+      <button
+        onClick={() => setShowAutoApplyModal(false)}
+        style={{
+          background: "#0070f3",
+          color: "#fff",
+          padding: "14px 32px",
+          border: "none",
+          borderRadius: 6,
+          fontWeight: "bold",
+          fontSize: 16,
+          cursor: "pointer",
+        }}
+      >
+        Start Auto-Applying
+      </button>
+    </div>
+  </div>
+)}
+
     </div>
   );
 }
