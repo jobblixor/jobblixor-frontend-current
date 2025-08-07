@@ -7,7 +7,6 @@ import Image from 'next/image';
 import { initializeApp } from 'firebase/app';
 import { getFirestore, doc, setDoc } from 'firebase/firestore';
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
-const [showAutoApplyModal, setShowAutoApplyModal] = useState(false);
 
 
 // --- INSERT YOUR FIREBASE CONFIG BELOW ---
@@ -35,6 +34,7 @@ export default function Page() {
   const [dashboardEmail, setDashboardEmail] = useState('');
   const [dashboardResults, setDashboardResults] = useState<Record<string, unknown>[] | null>(null);
   const [checkingDashboard, setCheckingDashboard] = useState(false);
+  const [showAutoApplyModal, setShowAutoApplyModal] = useState(false);
 
   // NEW: Response Viewer + submitting state
   const [responseViewer, setResponseViewer] = useState<string[]>([]);
