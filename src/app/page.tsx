@@ -113,10 +113,8 @@ export default function Page() {
     
 
     setResponseViewer([
-      "✅ Info saved to Jobblixor!",
-      "You can now run Jobblixor from Indeed!
-Open up Indeed, click the Jobblixor extension, choose how many jobs you would like to apply to, then press Start Auto-Applying.
-Jobblixor applies inside your browser using the settings you just saved."
+      "✅ Info saved to Jobblixor! Resume and profile photo uploaded.",
+      "You can now head to Indeed and start auto-applying!"
     ]);
     console.log("Jobblixor: Saved email to localStorage:", formEmail);
     setShowAutoApplyModal(true); // <-- THIS SHOWS THE MODAL
@@ -311,7 +309,7 @@ Jobblixor applies inside your browser using the settings you just saved."
             <p className="text-sm mb-2">View job application results from the automated process</p>
             <div className="bg-gray-100 text-gray-800 p-4 rounded-lg whitespace-pre-line max-h-96 overflow-auto">
               {responseViewer.length === 0
-                ? <code>When you’re ready, fill out the form and click Save Preferences. Your next steps will appear here.</code>
+                ? <code>Response will appear here after applying to jobs</code>
                 : responseViewer.map((line, i) => <div key={i}>{line}</div>)
               }
             </div>
