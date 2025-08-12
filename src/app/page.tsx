@@ -5,7 +5,7 @@ import Image from 'next/image';
 
 // --- NEW: Firebase imports ---
 import { initializeApp } from 'firebase/app';
-import { getFirestore, doc, setDoc } from 'firebase/firestore';
+import { getFirestore, doc, setDoc, getDoc } from 'firebase/firestore';
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
 
@@ -114,7 +114,7 @@ export default function Page() {
 
     setResponseViewer([
       "✅ Info saved to Jobblixor! Resume and profile photo uploaded.",
-      "You can now head to Indeed and start auto-applying!"
+      "You can now run Jobblixor from Indeed! Open an Indeed job page, click the Jobblixor extension, enter how many jobs you would like it to apply to, then press Start Auto-Applying. Jobblixor applies inside your browser using the settings you just saved."
     ]);
     console.log("Jobblixor: Saved email to localStorage:", formEmail);
     setShowAutoApplyModal(true); // <-- THIS SHOWS THE MODAL
@@ -126,14 +126,33 @@ export default function Page() {
   setSubmitting(false);
 };
 
-  // (no changes to dashboard/check tabs)
-  const handleCheckApplications = () => {
+  // (Check applications from Firebase)
+  const handleCheckApplications = async () => {
+    if (!emailInput.trim()) {
+      setCheckError('Please enter a valid email address.');
+      return;
+    }
+    
     setChecking(true);
     setCheckError('');
-    setTimeout(() => {
-      setApplicationCount(3); // Just mock data for now
-      setChecking(false);
-    }, 1000);
+    setApplicationCount(null);
+    
+    try {
+      const userDoc = await getDoc(doc(db, "users", emailInput.trim()));
+      
+      if (userDoc.exists()) {
+        const userData = userDoc.data();
+        const freeUsesLeft = userData.free_uses_left || 0;
+        setApplicationCount(freeUsesLeft);
+      } else {
+        setCheckError('No account found with this email address.');
+      }
+    } catch (error) {
+      console.error('Error fetching user data:', error);
+      setCheckError('Failed to check applications. Please try again.');
+    }
+    
+    setChecking(false);
   };
   const handleDashboardLookup = () => {
     setCheckingDashboard(true);
@@ -172,15 +191,12 @@ export default function Page() {
         <>
           <section className="w-full py-4 text-center">
             <h1 className="text-4xl md:text-5xl font-bold">Automate Your Job Search</h1>
-            <p className="mt-4 text-lg md:text-xl max-w-2xl mx-auto">
-              Streamline your job application process with AI-powered cover letters and application tracking
-            </p>
           </section>
 
           {/* --- FORM WITH SUBMITTING AND LOG OUTPUT --- */}
           <section className="bg-white/20 backdrop-blur-lg rounded-2xl p-8 w-full max-w-4xl mt-6 text-black shadow-xl">
             <h2 className="text-2xl font-bold text-white text-center mb-2">Automated Job Application Console</h2>
-            <p className="text-center text-white mb-6">Enter your information and our AI bot will apply to jobs for you</p>
+            <p className="text-center text-white mb-6">Enter your information and our chrome extension will apply to jobs for you</p>
             <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {[
                 { label: 'Job Title', name: 'job_title', placeholder: 'Software Engineer' },
@@ -194,10 +210,10 @@ export default function Page() {
                 { label: 'Job Title Relevant Experience', name: 'job_title_relevant_experience', placeholder: 'IT Technician' },
                 { label: 'Company Relevant Experience', name: 'company_relevant_experience', placeholder: 'Microsoft' },
 
-              ].map(({ label, name, placeholder, type = 'text' }) => (
+              ].map(({ label, name, placeholder }) => (
                 <div key={name}>
                   <label className="block text-white mb-1">{label}</label>
-                  <input name={name} type={type} placeholder={placeholder} className="w-full p-3 rounded-lg bg-blue-100 text-black" />
+                  <input name={name} type="text" placeholder={placeholder} className="w-full p-3 rounded-lg bg-blue-100 text-black" />
                 </div>
               ))}
 
@@ -305,7 +321,7 @@ export default function Page() {
             <p className="text-sm mb-2">View job application results from the automated process</p>
             <div className="bg-gray-100 text-gray-800 p-4 rounded-lg whitespace-pre-line max-h-96 overflow-auto">
               {responseViewer.length === 0
-                ? <code>Response will appear here after applying to jobs</code>
+                ? <code>When you're ready, fill out the form and click Save Preferences. Your next steps will appear here.</code>
                 : responseViewer.map((line, i) => <div key={i}>{line}</div>)
               }
             </div>
@@ -313,8 +329,13 @@ export default function Page() {
 
           <section className="text-center mt-16 mb-10">
             <h2 className="text-2xl font-bold">Ready to supercharge your job search?</h2>
-            <p className="mt-2">Get started with our free plan or upgrade to a premium subscription for unlimited applications.</p>
-            <button className="mt-4 bg-white text-blue-700 px-6 py-3 rounded-xl font-semibold shadow-md hover:shadow-lg">Subscribe Now</button>
+            <p className="mt-2">Try Jobblixor with 5 free applications, then subscribe for up to 1,500 applications monthly.</p>
+            <button 
+              onClick={() => setActiveTab('subscriptions')}
+              className="mt-4 bg-white text-blue-700 px-6 py-3 rounded-xl font-semibold shadow-md hover:shadow-lg"
+            >
+              Subscribe Now
+            </button>
           </section>
         </>
       )}
@@ -433,7 +454,10 @@ export default function Page() {
         Ready to start auto-applying on Indeed?
       </p>
       <button
-        onClick={() => setShowAutoApplyModal(false)}
+        onClick={() => {
+          setShowAutoApplyModal(false);
+          window.open('https://indeed.com', '_blank');
+        }}
         style={{
           background: "#0070f3",
           color: "#fff",
@@ -454,5 +478,3 @@ export default function Page() {
     </div>
   );
 }
-
-
