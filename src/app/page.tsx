@@ -430,12 +430,12 @@ export default function Page() {
           <h2 className="text-2xl font-bold mb-4">About Jobblixor</h2>
           <p>
             Jobblixor is a fully automated job application platform designed to streamline the hiring process for job seekers.<br />
-            Instead of spending hours searching, filling out forms, and writing the same details repeatedly, users simply enter their information once — and Jobblixor takes care of the rest.<br />
-            Our system intelligently applies to hundreds of relevant job opportunities on the user&apos;s behalf, tracks application progress, and delivers results faster — all while saving users time, energy, and stress.<br />
-            But Jobblixor isn&apos;t just about convenience. It was created from firsthand experience with the broken job hunt process — built by someone who lived through it and decided to fix it.<br />
-            We believe access to opportunity should be efficient, fair, and frictionless — whether you&apos;re a recent grad, a career changer, or someone fighting to get noticed. Jobblixor levels the playing field.<br />
+            Instead of spending hours searching, filling out forms, and writing the same details repeatedly, users simply enter their information once and Jobblixor takes care of the rest.<br />
+            Our system intelligently applies to hundreds of relevant job opportunities on the users behalf, tracks application progress, and delivers results faster while saving users time, energy, and stress.<br />
+            But Jobblixor is not just about convenience. It was created from firsthand experience with the broken job hunt process built by someone who lived through it and decided to fix it.<br />
+            We believe access to opportunity should be efficient, fair, and frictionless whether you are a recent grad, a career changer, or someone fighting to get noticed. Jobblixor levels the playing field.<br />
             Our mission is simple:<br />
-            To empower job seekers with automation, efficiency, and control — and to give them back their time.
+            To empower job seekers with automation, efficiency, and control and to give them back their time.
           </p>
         </section>
       )}
