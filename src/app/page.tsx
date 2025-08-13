@@ -336,15 +336,15 @@ export default function Page() {
             <div>
               <h3 className="text-xl font-semibold mb-3">Step 1 - Sign up on Jobblixor</h3>
               <p className="text-lg mb-4">
-                Create your account and save your job title(s), location, salary range, and resume link.<br />
-                <span className="text-sm italic">(Stored securely in Jobblixor.)</span>
+                Create your account and save your job titles, location, salary range, and resume link.
               </p>
+              <p className="text-sm italic text-gray-200">(Stored securely in Jobblixor.)</p>
             </div>
 
             <div>
               <h3 className="text-xl font-semibold mb-3">Step 2 - Log in to Indeed</h3>
               <p className="text-lg mb-4">
-                Open Indeed in a tab and sign in. Your login stays in your browser — Jobblixor never sees it.
+                Open Indeed in a tab and sign in. Your login stays in your browser and Jobblixor never sees it.
               </p>
               <button 
                 onClick={() => window.open('https://indeed.com', '_blank')}
@@ -369,15 +369,17 @@ export default function Page() {
             <div>
               <h3 className="text-xl font-semibold mb-3">Step 4 - Run it from Indeed (Updated)</h3>
               <p className="text-lg mb-4">
-                Open an Indeed job page, click the Jobblixor extension icon, then press Start Auto-Applying.<br />
-                Keep the job tab open while it runs. You don&apos;t need Jobblixor.com open.
+                Open an Indeed job page, click the Jobblixor extension icon, then press Start Auto-Applying.
+              </p>
+              <p className="text-lg mb-4">
+                Keep the job tab open while it runs. You do not need Jobblixor.com open.
               </p>
             </div>
           </div>
 
           <div className="mt-8 p-6 bg-white/10 rounded-lg">
             <p className="text-lg">
-              <strong>Note:</strong> Jobblixor uses your saved preferences from your account and applies to jobs inside your browser while you&apos;re logged in.
+              <strong>Note:</strong> Jobblixor uses your saved preferences from your account and applies to jobs inside your browser while you are logged in.
             </p>
           </div>
         </section>
