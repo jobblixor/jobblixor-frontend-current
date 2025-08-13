@@ -24,7 +24,7 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
 export default function Page() {
-  const tabs = ['home', 'dashboard', 'subscriptions', 'check', 'about'] as const;
+  const tabs = ['home', 'directions', 'subscriptions', 'check', 'about'] as const;
   type TabType = typeof tabs[number];
   const [activeTab, setActiveTab] = useState<TabType>('home');
   const [emailInput, setEmailInput] = useState('');
@@ -182,7 +182,7 @@ export default function Page() {
             onClick={() => setActiveTab(tab)}
             className={`px-4 py-2 rounded-full ${activeTab === tab ? 'bg-white text-blue-700' : 'bg-blue-800 hover:bg-blue-900'}`}
           >
-            {tab === 'check' ? 'Check Applications' : tab.charAt(0).toUpperCase() + tab.slice(1)}
+            {tab === 'check' ? 'Check Applications' : tab === 'directions' ? 'Directions' : tab.charAt(0).toUpperCase() + tab.slice(1)}
           </button>
         ))}
       </nav>
@@ -191,6 +191,9 @@ export default function Page() {
         <>
           <section className="w-full py-4 text-center">
             <h1 className="text-4xl md:text-5xl font-bold">Automate Your Job Search</h1>
+            <p className="mt-4 text-lg md:text-xl max-w-2xl mx-auto">
+              Streamline your job search with our Chrome extension! Jobblixor applies inside your browser while you browse. Click the directions button to get set up and see how it works.
+            </p>
           </section>
 
           {/* --- FORM WITH SUBMITTING AND LOG OUTPUT --- */}
@@ -340,36 +343,58 @@ export default function Page() {
         </>
       )}
 
-      {activeTab === 'dashboard' && (
-        <section className="mt-8 w-full max-w-4xl p-6 bg-white/20 backdrop-blur-lg rounded-xl text-white">
-          <h2 className="text-2xl font-bold mb-4">Dashboard</h2>
-          <p className="mb-3">Enter your email to view your applied jobs:</p>
-          <div className="flex flex-col sm:flex-row gap-4 mb-6">
-            <input
-              type="email"
-              value={dashboardEmail}
-              onChange={(e) => setDashboardEmail(e.target.value)}
-              placeholder="Enter your email"
-              className="flex-1 p-3 rounded-lg bg-blue-100 text-black"
-            />
-            <button
-              onClick={handleDashboardLookup}
-              className="bg-blue-800 px-6 py-2 rounded-lg hover:bg-blue-900">
-              {checkingDashboard ? 'Loading...' : 'Check Applications'}
-            </button>
+      {activeTab === 'directions' && (
+        <section className="mt-8 w-full max-w-4xl p-8 bg-white/20 backdrop-blur-lg rounded-xl text-white">
+          <h2 className="text-3xl font-bold mb-8 text-center">How Jobblixor Works</h2>
+          
+          <div className="space-y-8">
+            <div>
+              <h3 className="text-xl font-semibold mb-3">Step 1 - Sign up on Jobblixor</h3>
+              <p className="text-lg mb-4">
+                Create your account and save your job title(s), location, salary range, and resume link.<br />
+                <span className="text-sm italic">(Stored securely in Jobblixor.)</span>
+              </p>
+            </div>
+
+            <div>
+              <h3 className="text-xl font-semibold mb-3">Step 2 - Log in to Indeed</h3>
+              <p className="text-lg mb-4">
+                Open Indeed in a tab and sign in. Your login stays in your browser-Jobblixor never sees it.
+              </p>
+              <button 
+                onClick={() => window.open('https://indeed.com', '_blank')}
+                className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 font-semibold"
+              >
+                Open Indeed
+              </button>
+            </div>
+
+            <div>
+              <h3 className="text-xl font-semibold mb-3">Step 3 - Install the Chrome Extension</h3>
+              <p className="text-lg mb-4">
+                Add the Jobblixor extension to Chrome (one-time install).
+              </p>
+              <button 
+                className="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 font-semibold"
+              >
+                Install Extension
+              </button>
+            </div>
+
+            <div>
+              <h3 className="text-xl font-semibold mb-3">Step 4 - Run it from Indeed (Updated)</h3>
+              <p className="text-lg mb-4">
+                Open an Indeed job page, click the Jobblixor extension icon, then press Start Auto-Applying.<br />
+                Keep the job tab open while it runs. You don't need Jobblixor.com open.
+              </p>
+            </div>
           </div>
-          {dashboardResults && dashboardResults.length > 0 ? (
-            <ul className="space-y-4">
-              {(dashboardResults as { jobTitle: string; company: string; link: string }[]).map((job, i) => (
-                <li key={i} className="bg-white text-black p-4 rounded-lg shadow">
-                  <p><strong>{job.jobTitle}</strong> at {job.company}</p>
-                  <a href={job.link} target="_blank" rel="noopener noreferrer" className="text-blue-700 underline">View Application</a>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            checkingDashboard ? null : <p>No applications to show yet.</p>
-          )}
+
+          <div className="mt-8 p-6 bg-white/10 rounded-lg">
+            <p className="text-lg">
+              <strong>Note:</strong> Jobblixor uses your saved preferences from your account and applies to jobs inside your browser while you're logged in.
+            </p>
+          </div>
         </section>
       )}
 
