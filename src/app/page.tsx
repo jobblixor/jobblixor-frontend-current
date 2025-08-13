@@ -31,21 +31,14 @@ export default function Page() {
   const [applicationCount, setApplicationCount] = useState<number | null>(null);
   const [checking, setChecking] = useState(false);
   const [checkError, setCheckError] = useState('');
-  const [dashboardEmail, setDashboardEmail] = useState('');
-  const [dashboardResults, setDashboardResults] = useState<Record<string, unknown>[] | null>(null);
-  const [checkingDashboard, setCheckingDashboard] = useState(false);
+
   const [showAutoApplyModal, setShowAutoApplyModal] = useState(false);
 
   // NEW: Response Viewer + submitting state
   const [responseViewer, setResponseViewer] = useState<string[]>([]);
   const [submitting, setSubmitting] = useState(false);
 
-  // Dummy/mock data for dashboard
-  const mockApplications = [
-    { jobTitle: 'Frontend Developer', company: 'TechCorp', link: 'https://example.com/job1' },
-    { jobTitle: 'UX Designer', company: 'Designify', link: 'https://example.com/job2' },
-    { jobTitle: 'Backend Engineer', company: 'APILogic', link: 'https://example.com/job3' }
-  ];
+
 
   // --- FORM SUBMISSION: Save to Firebase + localStorage ---
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
@@ -153,14 +146,6 @@ export default function Page() {
     }
     
     setChecking(false);
-  };
-  const handleDashboardLookup = () => {
-    setCheckingDashboard(true);
-    setDashboardResults(null);
-    setTimeout(() => {
-      setDashboardResults(mockApplications);
-      setCheckingDashboard(false);
-    }, 1000);
   };
 
   return (
