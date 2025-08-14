@@ -178,7 +178,7 @@ export default function Page() {
           <section className="w-full py-4 text-center">
             <h1 className="text-4xl md:text-5xl font-bold">Automate Your Job Search</h1>
             <p className="mt-4 text-lg md:text-xl max-w-2xl mx-auto">
-              Streamline your job search with our Chrome extension! Jobblixor applies inside your browser while you browse. Click the directions button to get set up and see how it works.
+              Streamline your job search with our Chrome extension! Jobblixor applies inside your browser while you browse. Click the directions button to get set up and see how it works. Have questions or feedback? Reach out anytime at jobblixor@gmail.com. I check emails daily.
             </p>
           </section>
 
@@ -186,6 +186,10 @@ export default function Page() {
           <section className="bg-white/20 backdrop-blur-lg rounded-2xl p-8 w-full max-w-4xl mt-6 text-black shadow-xl">
             <h2 className="text-2xl font-bold text-white text-center mb-2">Automated Job Application Console</h2>
             <p className="text-center text-white mb-6">Enter your information and our chrome extension will apply to jobs for you</p>
+            <p className="text-center text-white mb-6 text-sm">
+              If you'd like to update your preferences at any time, simply re-enter your information in the console. Your previous data will be replaced automatically.<br />
+              Please note: any fields left blank will be saved as blank in our system, so be sure to complete all sections you want included.
+            </p>
             <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {[
                 { label: 'Job Title', name: 'job_title', placeholder: 'Software Engineer' },
