@@ -39,7 +39,74 @@ export default function Page() {
   const [responseViewer, setResponseViewer] = useState<string[]>([]);
   const [submitting, setSubmitting] = useState(false);
 
+  // NEW: Stripe functions
+  const startCheckout = async (email: string, priceId: string) => {
+    try {
+      const response = await fetch('/api/create-checkout-session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, price_id: priceId }),
+      });
+      
+      const { url } = await response.json();
+      if (url) {
+        window.location.href = url;
+      } else {
+        alert('Failed to create checkout session. Please try again.');
+      }
+    } catch (error) {
+      console.error('Checkout error:', error);
+      alert('Failed to start checkout. Please try again.');
+    }
+  };
 
+  const openPortal = async (email: string) => {
+    try {
+      const response = await fetch('/api/create-portal-session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      });
+      
+      const { url } = await response.json();
+      if (url) {
+        window.location.href = url;
+      } else {
+        alert('Failed to open billing portal. Please try again.');
+      }
+    } catch (error) {
+      console.error('Portal error:', error);
+      alert('Failed to open billing portal. Please try again.');
+    }
+  };
+
+  const handleSelectPlan = (planType: 'starter' | 'pro' | 'elite') => {
+    const userEmail = localStorage.getItem('email');
+    if (!userEmail) {
+      alert('Please save your preferences first by filling out the form on the Home tab.');
+      setActiveTab('home');
+      return;
+    }
+
+    const priceIds = {
+      starter: process.env.NEXT_PUBLIC_PRICE_STARTER || 'price_1R4v0mK9JWTYHthMSuE9TM4a',
+      pro: process.env.NEXT_PUBLIC_PRICE_PRO || 'price_1R4v1yK9JWTYHthMrpXJz3l6',
+      elite: process.env.NEXT_PUBLIC_PRICE_ELITE || 'price_1R4v2sK9JWTYHthMoX4LB2P2'
+    };
+
+    startCheckout(userEmail, priceIds[planType]);
+  };
+
+  const handleCancelSubscription = () => {
+    const userEmail = localStorage.getItem('email');
+    if (!userEmail) {
+      alert('Please save your preferences first by filling out the form on the Home tab.');
+      setActiveTab('home');
+      return;
+    }
+
+    openPortal(userEmail);
+  };
 
   // --- FORM SUBMISSION: Save to Firebase + localStorage ---
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
@@ -60,7 +127,7 @@ export default function Page() {
 
   const formEmail = (formData.get("email") as string)?.trim();
   if (!formEmail) {
-    setResponseViewer(["❌ Please enter a valid email."]);
+    setResponseViewer(["⚠ Please enter a valid email."]);
     setSubmitting(false);
     return;
   }
@@ -113,7 +180,7 @@ export default function Page() {
     console.log("Jobblixor: Saved email to localStorage:", formEmail);
     setShowAutoApplyModal(true); // <-- THIS SHOWS THE MODAL
   } catch (error) {
-    setResponseViewer(["❌ Failed to save info or upload files. Try again."]);
+    setResponseViewer(["⚠ Failed to save info or upload files. Try again."]);
     console.error(error);
   }
 
@@ -394,17 +461,31 @@ export default function Page() {
         <section className="w-full max-w-4xl p-6 bg-white/10 backdrop-blur-md rounded-xl">
           <h2 className="text-2xl font-bold mb-6 text-white text-center">Subscription Plans</h2>
           <div className="grid md:grid-cols-3 gap-6">
-            {[{ title: 'Starter', price: '$9.99/mo', count: '300' }, { title: 'Pro', price: '$19.99/mo', count: '900' }, { title: 'Elite', price: '$29.99/mo', count: '1500' }].map(plan => (
+            {[
+              { title: 'Starter', price: '$9.99/mo', count: '300', type: 'starter' as const }, 
+              { title: 'Pro', price: '$19.99/mo', count: '900', type: 'pro' as const }, 
+              { title: 'Elite', price: '$29.99/mo', count: '1500', type: 'elite' as const }
+            ].map(plan => (
               <div key={plan.title} className="bg-white text-center text-black p-6 rounded-xl shadow-md">
                 <h3 className="text-xl font-bold mb-2">{plan.title}</h3>
                 <p className="text-lg mb-1">{plan.price}</p>
                 <p className="mb-4">{plan.count} applications/month</p>
-                <button className="bg-blue-700 text-white px-4 py-2 rounded hover:bg-blue-800">Select</button>
+                <button 
+                  onClick={() => handleSelectPlan(plan.type)}
+                  className="bg-blue-700 text-white px-4 py-2 rounded hover:bg-blue-800"
+                >
+                  Select
+                </button>
               </div>
             ))}
           </div>
           <div className="text-center mt-6">
-            <button className="bg-red-600 text-white px-6 py-2 rounded hover:bg-red-700">Cancel Subscription</button>
+            <button 
+              onClick={handleCancelSubscription}
+              className="bg-red-600 text-white px-6 py-2 rounded hover:bg-red-700"
+            >
+              Manage Billing
+            </button>
           </div>
         </section>
       )}
