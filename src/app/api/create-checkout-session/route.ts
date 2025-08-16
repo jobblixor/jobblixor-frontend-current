@@ -5,6 +5,8 @@ export async function POST(request: NextRequest) {
   try {
     const { email, price_id } = await request.json();
 
+    console.log('Received request:', { email, price_id });
+
     if (!email || !price_id) {
       return NextResponse.json({ error: 'Missing email or price_id' }, { status: 400 });
     }
@@ -27,21 +29,10 @@ export async function POST(request: NextRequest) {
       cancel_url: `${request.headers.get('origin')}/subscriptions`,
     });
 
+    console.log('Created session:', session.url);
     return NextResponse.json({ url: session.url });
   } catch (error) {
     console.error('Checkout session error:', error);
     return NextResponse.json({ error: 'Failed to create checkout session' }, { status: 500 });
   }
-}
-
-// Add OPTIONS handler for CORS
-export async function OPTIONS() {
-  return new NextResponse(null, {
-    status: 200,
-    headers: {
-      'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'POST, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type',
-    },
-  });
 }
