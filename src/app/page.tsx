@@ -80,12 +80,19 @@ export default function Page() {
     }
   };
 
-  const handleSelectPlan = (planType: 'starter' | 'pro' | 'elite') => {
-    const userEmail = localStorage.getItem('email');
+  const handleSelectPlan = async (planType: 'starter' | 'pro' | 'elite') => {
+    // Try to get email from localStorage first
+    let userEmail = localStorage.getItem('email');
+    
+    // If no email in localStorage, prompt user to enter it
     if (!userEmail) {
-      alert('Please save your preferences first by filling out the form on the Home tab.');
-      setActiveTab('home');
-      return;
+      userEmail = prompt('Please enter your email address to proceed with subscription:');
+      if (!userEmail || !userEmail.includes('@')) {
+        alert('Please enter a valid email address.');
+        return;
+      }
+      // Save the email to localStorage for future use
+      localStorage.setItem('email', userEmail);
     }
 
     const priceIds = {
@@ -98,11 +105,16 @@ export default function Page() {
   };
 
   const handleCancelSubscription = () => {
-    const userEmail = localStorage.getItem('email');
+    // Try to get email from localStorage first
+    let userEmail = localStorage.getItem('email');
+    
+    // If no email in localStorage, prompt user to enter it
     if (!userEmail) {
-      alert('Please save your preferences first by filling out the form on the Home tab.');
-      setActiveTab('home');
-      return;
+      userEmail = prompt('Please enter your email address to manage your billing:');
+      if (!userEmail || !userEmail.includes('@')) {
+        alert('Please enter a valid email address.');
+        return;
+      }
     }
 
     openPortal(userEmail);
