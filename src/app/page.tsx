@@ -42,17 +42,22 @@ export default function Page() {
   // NEW: Stripe functions
   const startCheckout = async (email: string, priceId: string) => {
     try {
+      console.log('Starting checkout with:', { email, priceId });
+      
       const response = await fetch('/api/create-checkout-session', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, price_id: priceId }),
       });
       
-      const { url } = await response.json();
-      if (url) {
-        window.location.href = url;
+      console.log('Response status:', response.status);
+      const data = await response.json();
+      console.log('Response data:', data);
+      
+      if (data.url) {
+        window.location.href = data.url;
       } else {
-        alert('Failed to create checkout session. Please try again.');
+        alert(`Failed to create checkout session: ${data.error || 'Unknown error'}`);
       }
     } catch (error) {
       console.error('Checkout error:', error);
@@ -96,9 +101,9 @@ export default function Page() {
     }
 
     const priceIds = {
-      starter: process.env.NEXT_PUBLIC_PRICE_STARTER || 'price_1R4v0mK9JWTYHthMSuE9TM4a',
-      pro: process.env.NEXT_PUBLIC_PRICE_PRO || 'price_1R4v1yK9JWTYHthMrpXJz3l6',
-      elite: process.env.NEXT_PUBLIC_PRICE_ELITE || 'price_1R4v2sK9JWTYHthMoX4LB2P2'
+      starter: 'price_1R4v0mK9JWTYHthMSuE9TM4a',
+      pro: 'price_1R4v1yK9JWTYHthMrpXJz3l6',
+      elite: 'price_1R4v2sK9JWTYHthMoX4LB2P2'
     };
 
     startCheckout(userEmail, priceIds[planType]);
