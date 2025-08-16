@@ -40,14 +40,14 @@ export default function Page() {
   const [submitting, setSubmitting] = useState(false);
 
   // NEW: Stripe functions
-  const startCheckout = async (email: string, priceId: string) => {
+  const startCheckout = async (priceId: string) => {
     try {
-      console.log('Starting checkout with:', { email, priceId });
+      console.log('Starting checkout with:', { priceId });
       
       const response = await fetch('/api/create-checkout-session', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, price_id: priceId }),
+        body: JSON.stringify({ price_id: priceId }),
       });
       
       console.log('Response status:', response.status);
@@ -86,27 +86,13 @@ export default function Page() {
   };
 
   const handleSelectPlan = async (planType: 'starter' | 'pro' | 'elite') => {
-    // Try to get email from localStorage first
-    let userEmail = localStorage.getItem('email');
-    
-    // If no email in localStorage, prompt user to enter it
-    if (!userEmail) {
-      userEmail = prompt('Please enter your email address to proceed with subscription:');
-      if (!userEmail || !userEmail.includes('@')) {
-        alert('Please enter a valid email address.');
-        return;
-      }
-      // Save the email to localStorage for future use
-      localStorage.setItem('email', userEmail);
-    }
-
     const priceIds = {
       starter: 'price_1R4v0mK9JWTYHthMSuE9TM4a',
       pro: 'price_1R4v1yK9JWTYHthMrpXJz3l6',
       elite: 'price_1R4v2sK9JWTYHthMoX4LB2P2'
     };
 
-    startCheckout(userEmail, priceIds[planType]);
+    startCheckout(priceIds[planType]);
   };
 
   const handleCancelSubscription = () => {
