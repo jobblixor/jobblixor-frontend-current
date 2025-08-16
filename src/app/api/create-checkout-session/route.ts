@@ -23,8 +23,8 @@ export async function POST(request: NextRequest) {
       customer: customer.id,
       mode: 'subscription',
       line_items: [{ price: price_id, quantity: 1 }],
-      success_url: `${request.headers.get('origin')}/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${request.headers.get('origin')}/pricing`,
+      success_url: `${request.headers.get('origin')}/subscriptions?success=true`,
+      cancel_url: `${request.headers.get('origin')}/subscriptions`,
     });
 
     return NextResponse.json({ url: session.url });
@@ -32,4 +32,16 @@ export async function POST(request: NextRequest) {
     console.error('Checkout session error:', error);
     return NextResponse.json({ error: 'Failed to create checkout session' }, { status: 500 });
   }
+}
+
+// Add OPTIONS handler for CORS
+export async function OPTIONS(request: NextRequest) {
+  return new NextResponse(null, {
+    status: 200,
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'POST, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type',
+    },
+  });
 }
