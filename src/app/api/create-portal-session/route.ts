@@ -5,6 +5,8 @@ export async function POST(request: NextRequest) {
   try {
     const { email } = await request.json();
 
+    console.log('Portal request for email:', email);
+
     if (!email) {
       return NextResponse.json({ error: 'Missing email' }, { status: 400 });
     }
@@ -12,12 +14,12 @@ export async function POST(request: NextRequest) {
     const customers = await stripe.customers.list({ email, limit: 1 });
     
     if (customers.data.length === 0) {
-      return NextResponse.json({ error: 'Customer not found' }, { status: 404 });
+      return NextResponse.json({ error: 'No subscription found for this email address' }, { status: 404 });
     }
 
     const session = await stripe.billingPortal.sessions.create({
       customer: customers.data[0].id,
-      return_url: `${request.headers.get('origin')}/dashboard`,
+      return_url: `${request.headers.get('origin')}/subscriptions`,
     });
 
     return NextResponse.json({ url: session.url });

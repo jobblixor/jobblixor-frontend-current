@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getDb } from '@/lib/firebaseAdmin';
-import jwt from 'jsonwebtoken';
 
 export async function POST(request: NextRequest) {
   try {
@@ -8,24 +7,6 @@ export async function POST(request: NextRequest) {
 
     if (!email || !count || count <= 0) {
       return NextResponse.json({ error: 'Missing or invalid email/count' }, { status: 400 });
-    }
-
-    // Optional: JWT verification for additional security
-    if (process.env.JWT_SECRET) {
-      const authHeader = request.headers.get('authorization');
-      if (!authHeader?.startsWith('Bearer ')) {
-        return NextResponse.json({ error: 'Missing or invalid token' }, { status: 401 });
-      }
-      
-      try {
-        const token = authHeader.substring(7);
-        const decoded = jwt.verify(token, process.env.JWT_SECRET) as { email: string };
-        if (decoded.email !== email) {
-          return NextResponse.json({ error: 'Token email mismatch' }, { status: 401 });
-        }
-      } catch {
-        return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
-      }
     }
 
     const db = getDb();

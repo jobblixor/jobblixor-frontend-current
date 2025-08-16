@@ -3,8 +3,6 @@ import { stripe } from '@/lib/stripe';
 import { getDb } from '@/lib/firebaseAdmin';
 import Stripe from 'stripe';
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
-
 export const runtime = 'nodejs';
 
 async function buffer(readable: ReadableStream<Uint8Array>) {
@@ -103,7 +101,6 @@ export async function POST(request: NextRequest) {
         const userDoc = await userRef.get();
         const currentData = userDoc.data();
         
-        // Reset usage if period advanced
         const shouldResetUsage = !currentData || 
           currentData.current_period_end !== (subscription as any).current_period_end;
 
