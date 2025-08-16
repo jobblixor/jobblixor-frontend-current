@@ -101,7 +101,7 @@ export default function Page() {
     
     // If no email in localStorage, prompt user to enter it
     if (!userEmail) {
-      userEmail = prompt('Please enter your email address to manage your billing:');
+      userEmail = prompt('Please enter the email address associated with your subscription:');
       if (!userEmail || !userEmail.includes('@')) {
         alert('Please enter a valid email address.');
         return;
