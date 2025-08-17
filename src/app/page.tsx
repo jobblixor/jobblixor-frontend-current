@@ -215,8 +215,11 @@ export default function Page() {
       userData.password_hash = existing.password_hash || null;
       
       // Preserve any other Stripe-related fields
-      if (existing.stripe_subscription_id) userData.stripe_subscription_id = existing.stripe_subscription_id;
-      if (existing.stripe_price_id) userData.stripe_price_id = existing.stripe_price_id;
+      if (existingData.stripe_subscription_id) userData.stripe_subscription_id = existingData.stripe_subscription_id;
+      if (existingData.stripe_price_id) userData.stripe_price_id = existingData.stripe_price_id;
+      if (existingData.price_id) userData.price_id = existingData.price_id;
+      if (existingData.current_period_end) userData.current_period_end = existingData.current_period_end;
+      if (existingData.applications_used_this_period) userData.applications_used_this_period = existingData.applications_used_this_period;;
     }
 
     // Save all data to Firestore
