@@ -139,7 +139,7 @@ export default function Page() {
   const userData: Record<string, any> = {};
   formData.forEach((value, key) => {
     // Exclude file inputs because we upload them separately
-    if (key !== "resume" && key !== "profilePhoto") {
+    if (key !== "resume") {
       userData[key] = value;
     }
   });
@@ -174,19 +174,6 @@ export default function Page() {
     } else if (existingData && existingData.resume) {
       // Preserve existing resume if no new one uploaded
       userData["resume"] = existingData.resume;
-    }
-
-    // Upload profile photo file
-    const profilePhotoFile = formData.get("profilePhoto") as File | null;
-    let profilePhotoUrl = "";
-    if (profilePhotoFile && profilePhotoFile.size > 0) {
-      const photoRef = ref(storage, `profilePhotos/${formEmail}/${profilePhotoFile.name}`);
-      await uploadBytes(photoRef, profilePhotoFile);
-      profilePhotoUrl = await getDownloadURL(photoRef);
-      userData["profilePhoto"] = profilePhotoUrl;
-    } else if (existingData && existingData.profilePhoto) {
-      // Preserve existing photo if no new one uploaded
-      userData["profilePhoto"] = existingData.profilePhoto;
     }
 
     // --- PRESERVE CRITICAL EXISTING DATA ---
@@ -230,7 +217,7 @@ export default function Page() {
     
 
     setResponseViewer([
-      "✅ Info saved to Jobblixor! Resume and profile photo uploaded.",
+      "✅ Info saved to Jobblixor! Resume uploaded.",
       "You can now run Jobblixor from Indeed! Open an Indeed job page, click the Jobblixor extension, enter how many jobs you would like it to apply to, then press Start Auto-Applying. Jobblixor applies inside your browser using the settings you just saved."
     ]);
     console.log("Jobblixor: Saved email to localStorage:", formEmail);
@@ -323,6 +310,7 @@ export default function Page() {
                 { label: 'Last Name', name: 'last_name', placeholder: 'Doe' },
                 { label: 'Phone Number', name: 'phone_number', placeholder: '(123) 456-7890' },
                 { label: 'Email', name: 'email', placeholder: 'example@email.com' },
+                { label: 'Preferred Salary', name: 'preferred_salary', placeholder: '$80,000' },
                 { label: 'Job Title Relevant Experience', name: 'job_title_relevant_experience', placeholder: 'IT Technician' },
                 { label: 'Company Relevant Experience', name: 'company_relevant_experience', placeholder: 'Microsoft' },
 
@@ -411,15 +399,12 @@ export default function Page() {
                 </select>
               </div>
 
-              {/* Existing file upload fields */}
+              {/* Resume upload field only */}
               <div>
                 <label className="block text-white mb-1">Resume (PDF)</label>
                 <input name="resume" type="file" accept="application/pdf" className="w-full p-3 rounded-lg bg-blue-100 text-black" />
               </div>
-              <div>
-                <label className="block text-white mb-1">Profile Photo</label>
-                <input name="profilePhoto" type="file" accept="image/*" className="w-full p-3 rounded-lg bg-blue-100 text-black" />
-              </div>
+              
               <div className="md:col-span-2 flex justify-center">
                 <button
                   type="submit"
