@@ -34,6 +34,8 @@ export default function Page() {
   const [checkError, setCheckError] = useState('');
 
   const [showAutoApplyModal, setShowAutoApplyModal] = useState(false);
+  const [showEmailModal, setShowEmailModal] = useState(false);
+  const [billingEmail, setBillingEmail] = useState('');
 
   // NEW: Response Viewer + submitting state
   const [responseViewer, setResponseViewer] = useState<string[]>([]);
@@ -66,6 +68,7 @@ export default function Page() {
   };
 
   const openPortal = async (email: string) => {
+    console.log('=== OPENING PORTAL FOR EMAIL ===', email);
     try {
       const response = await fetch('/api/create-portal-session', {
         method: 'POST',
@@ -73,11 +76,14 @@ export default function Page() {
         body: JSON.stringify({ email }),
       });
       
-      const { url } = await response.json();
-      if (url) {
-        window.location.href = url;
+      console.log('Portal response status:', response.status);
+      const data = await response.json();
+      console.log('Portal response data:', data);
+      
+      if (data.url) {
+        window.location.href = data.url;
       } else {
-        alert('Failed to open billing portal. Please try again.');
+        alert(`Failed to open billing portal: ${data.error || 'Unknown error'}`);
       }
     } catch (error) {
       console.error('Portal error:', error);
@@ -96,19 +102,27 @@ export default function Page() {
   };
 
   const handleCancelSubscription = () => {
-    // Try to get email from localStorage first
-    let userEmail = localStorage.getItem('email');
+    console.log('=== MANAGE BILLING CLICKED ===');
+    setShowEmailModal(true);
+  };
+
+  const handleEmailSubmit = () => {
+    console.log('=== EMAIL SUBMIT CLICKED ===', billingEmail);
     
-    // If no email in localStorage, prompt user to enter it
-    if (!userEmail) {
-      userEmail = prompt('Please enter the email address associated with your subscription:');
-      if (!userEmail || !userEmail.includes('@')) {
-        alert('Please enter a valid email address.');
-        return;
-      }
+    if (!billingEmail.includes('@') || billingEmail.trim().length < 5) {
+      alert('Please enter a valid email address.');
+      return;
     }
 
-    openPortal(userEmail);
+    setShowEmailModal(false);
+    openPortal(billingEmail.trim());
+    setBillingEmail('');
+  };
+
+  const handleEmailCancel = () => {
+    console.log('=== EMAIL CANCEL CLICKED ===');
+    setShowEmailModal(false);
+    setBillingEmail('');
   };
 
   // --- FORM SUBMISSION: Save to Firebase + localStorage ---
@@ -130,7 +144,7 @@ export default function Page() {
 
   const formEmail = (formData.get("email") as string)?.trim();
   if (!formEmail) {
-    setResponseViewer(["⚠ Please enter a valid email."]);
+    setResponseViewer(["⚠️ Please enter a valid email."]);
     setSubmitting(false);
     return;
   }
@@ -183,7 +197,7 @@ export default function Page() {
     console.log("Jobblixor: Saved email to localStorage:", formEmail);
     setShowAutoApplyModal(true); // <-- THIS SHOWS THE MODAL
   } catch (error) {
-    setResponseViewer(["⚠ Failed to save info or upload files. Try again."]);
+    setResponseViewer(["⚠️ Failed to save info or upload files. Try again."]);
     console.error(error);
   }
 
@@ -572,6 +586,89 @@ export default function Page() {
       >
         Start Auto-Applying
       </button>
+    </div>
+  </div>
+)}
+
+{showEmailModal && (
+  <div style={{
+    position: "fixed",
+    top: 0, left: 0, right: 0, bottom: 0,
+    background: "rgba(0,0,0,0.8)",
+    zIndex: 10000,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center"
+  }}>
+    <div style={{
+      background: "#fff",
+      color: "#222",
+      padding: 32,
+      borderRadius: 12,
+      boxShadow: "0 8px 32px rgba(0,0,0,0.25)",
+      textAlign: "center",
+      maxWidth: 400,
+      width: "90%"
+    }}>
+      <h2 style={{ fontSize: 24, fontWeight: "bold", marginBottom: 8 }}>
+        Access Billing Portal
+      </h2>
+      <p style={{ fontSize: 16, marginBottom: 20, color: "#666" }}>
+        Enter your email address to manage your subscription
+      </p>
+      <input
+        type="email"
+        value={billingEmail}
+        onChange={(e) => setBillingEmail(e.target.value)}
+        placeholder="your@email.com"
+        style={{
+          width: "100%",
+          padding: "12px",
+          border: "2px solid #ddd",
+          borderRadius: 6,
+          fontSize: 16,
+          marginBottom: 20,
+          outline: "none",
+          boxSizing: "border-box"
+        }}
+        onKeyPress={(e) => {
+          if (e.key === 'Enter') {
+            handleEmailSubmit();
+          }
+        }}
+      />
+      <div style={{ display: "flex", gap: 12, justifyContent: "center" }}>
+        <button
+          onClick={handleEmailCancel}
+          style={{
+            background: "#f5f5f5",
+            color: "#333",
+            padding: "12px 24px",
+            border: "none",
+            borderRadius: 6,
+            fontWeight: "bold",
+            fontSize: 14,
+            cursor: "pointer",
+          }}
+        >
+          Cancel
+        </button>
+        <button
+          onClick={handleEmailSubmit}
+          style={{
+            background: "#0070f3",
+            color: "#fff",
+            padding: "12px 24px",
+            border: "none",
+            borderRadius: 6,
+            fontWeight: "bold",
+            fontSize: 14,
+            cursor: "pointer",
+          }}
+        >
+          Continue
+        </button>
+      </div>
     </div>
   </div>
 )}
