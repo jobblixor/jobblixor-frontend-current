@@ -152,6 +152,15 @@ export default function Page() {
   try {
     const storage = getStorage(app);
 
+    // Check if user already exists to preserve important data
+    const existingUserDoc = await getDoc(doc(db, "users", formEmail));
+    let existingData = {};
+    
+    if (existingUserDoc.exists()) {
+      existingData = existingUserDoc.data();
+      console.log('User exists - preserving existing data:', existingData);
+    }
+
     // Upload resume file
     const resumeFile = formData.get("resume") as File | null;
     let resumeUrl = "";
@@ -159,8 +168,11 @@ export default function Page() {
       const resumeRef = ref(storage, `resumes/${formEmail}/${resumeFile.name}`);
       await uploadBytes(resumeRef, resumeFile);
       resumeUrl = await getDownloadURL(resumeRef);
+      userData["resume"] = resumeUrl;
+    } else if (existingData && (existingData as any).resume) {
+      // Preserve existing resume if no new one uploaded
+      userData["resume"] = (existingData as any).resume;
     }
-    userData["resume"] = resumeUrl;
 
     // Upload profile photo file
     const profilePhotoFile = formData.get("profilePhoto") as File | null;
@@ -169,19 +181,42 @@ export default function Page() {
       const photoRef = ref(storage, `profilePhotos/${formEmail}/${profilePhotoFile.name}`);
       await uploadBytes(photoRef, profilePhotoFile);
       profilePhotoUrl = await getDownloadURL(photoRef);
+      userData["profilePhoto"] = profilePhotoUrl;
+    } else if (existingData && (existingData as any).profilePhoto) {
+      // Preserve existing photo if no new one uploaded
+      userData["profilePhoto"] = (existingData as any).profilePhoto;
     }
-    userData["profilePhoto"] = profilePhotoUrl;
 
-    // --- SYSTEM FIELDS (added automatically, not from user input) ---
+    // --- PRESERVE CRITICAL EXISTING DATA ---
     const nowIso = new Date().toISOString();
-    userData.application_count = 0;
-    userData.created_at = nowIso;
-    userData.free_uses_left = 5; // You can change this default!
-    userData.plan_id = "free";
-    userData.subscription_status = "active";
     userData.updated_at = nowIso;
-    userData.password_hash = null; // Only set if you hash passwords elsewhere
-    userData.stripe_customer_id = null; // Will be set by Stripe integration
+
+    // Only set these fields for NEW users
+    if (!existingUserDoc.exists()) {
+      console.log('New user - setting default values');
+      userData.application_count = 0;
+      userData.created_at = nowIso;
+      userData.free_uses_left = 5;
+      userData.plan_id = "free";
+      userData.subscription_status = "active";
+      userData.password_hash = null;
+      userData.stripe_customer_id = null;
+    } else {
+      console.log('Existing user - preserving critical data');
+      // PRESERVE existing Stripe and subscription data
+      const existing = existingData as any;
+      userData.stripe_customer_id = existing.stripe_customer_id || null;
+      userData.plan_id = existing.plan_id || "free";
+      userData.subscription_status = existing.subscription_status || "active";
+      userData.application_count = existing.application_count || 0;
+      userData.free_uses_left = existing.free_uses_left || 5;
+      userData.created_at = existing.created_at || nowIso;
+      userData.password_hash = existing.password_hash || null;
+      
+      // Preserve any other Stripe-related fields
+      if (existing.stripe_subscription_id) userData.stripe_subscription_id = existing.stripe_subscription_id;
+      if (existing.stripe_price_id) userData.stripe_price_id = existing.stripe_price_id;
+    }
 
     // Save all data to Firestore
     await setDoc(doc(db, "users", formEmail), userData);
@@ -406,7 +441,7 @@ export default function Page() {
 
           <section className="text-center mt-16 mb-10">
             <h2 className="text-2xl font-bold">Ready to supercharge your job search?</h2>
-            <p className="mt-2">Try Jobblixor with 5 free applications, then subscribe for up to 3,000 applications monthly.</p>
+            <p className="mt-2">Try Jobblixor with 5 free applications, then subscribe for up to 1,500 applications monthly.</p>
             <button 
               onClick={() => setActiveTab('subscriptions')}
               className="mt-4 bg-white text-blue-700 px-6 py-3 rounded-xl font-semibold shadow-md hover:shadow-lg"
