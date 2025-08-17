@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { stripe } from '@/lib/stripe';
 
+export async function GET() {
+  return NextResponse.json({ message: 'Portal route exists!' });
+}
+
 export async function POST(request: NextRequest) {
   try {
     const { email } = await request.json();
