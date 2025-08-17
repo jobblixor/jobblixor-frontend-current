@@ -1,5 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
+import { initializeApp } from 'firebase/app';
+import { getFirestore, doc, getDoc } from 'firebase/firestore';
+
+// Firebase config - same as in your page.tsx
+const firebaseConfig = {
+  apiKey: "AIzaSyDwXqhRgDxWh3KMHvxcxBRy6L4h5imUIqo",
+  authDomain: "jobblixor2.firebaseapp.com",
+  projectId: "jobblixor2",
+  storageBucket: "jobblixor2.firebasestorage.app",
+  messagingSenderId: "437887766629",
+  appId: "1:437887766629:web:882a686065fd6db189f68c"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
 
 // Debug environment variables
 console.log('STRIPE_SECRET_KEY exists:', !!process.env.STRIPE_SECRET_KEY);
@@ -42,35 +57,39 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid email address' }, { status: 400 });
     }
 
-    console.log('Searching for customer with email:', email);
-
-    // Find customer by email
-    const customers = await stripe.customers.list({ 
-      email: email.trim(),
-      limit: 1 
-    });
+    // First, check if user exists in Firebase
+    console.log('Checking Firebase for user:', email);
+    const userDoc = await getDoc(doc(db, "users", email.trim()));
     
-    console.log('Customers found:', customers.data.length);
-    console.log('Customer data:', customers.data);
-
-    if (customers.data.length === 0) {
+    if (!userDoc.exists()) {
+      console.log('User not found in Firebase');
       return NextResponse.json({ 
-        error: 'No subscription found for this email address. Please make sure you have an active subscription.' 
+        error: 'No account found with this email address.' 
       }, { status: 404 });
     }
 
-    const customer = customers.data[0];
-    console.log('Using customer:', customer.id);
+    const userData = userDoc.data();
+    console.log('Firebase user data:', userData);
 
-    // Get the origin for return URL
-    const origin = request.headers.get('origin') || request.headers.get('host');
-    const returnUrl = `${origin}?tab=subscriptions`;
+    // Check if user has a subscription
+    if (!userData.stripe_customer_id) {
+      console.log('User has no Stripe customer ID');
+      return NextResponse.json({ 
+        error: 'No subscription found. Please subscribe to a plan first.' 
+      }, { status: 404 });
+    }
+
+    console.log('Using Stripe customer ID:', userData.stripe_customer_id);
+
+    // Get the origin for return URL  
+    const origin = request.headers.get('origin') || 'https://jobblixor.com';
+    const returnUrl = `${origin}/?tab=subscriptions`;
 
     console.log('Return URL:', returnUrl);
 
-    // Create billing portal session
+    // Create billing portal session using the stored customer ID
     const session = await stripe.billingPortal.sessions.create({
-      customer: customer.id,
+      customer: userData.stripe_customer_id,
       return_url: returnUrl,
     });
 
