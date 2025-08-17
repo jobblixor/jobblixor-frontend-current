@@ -54,9 +54,9 @@ export async function POST(request: NextRequest) {
           const lineItem = subscription.items.data[0];
           
           const quotaMap: Record<string, number> = {
-            [process.env.PRICE_STARTER!]: 300,
-            [process.env.PRICE_PRO!]: 900,
-            [process.env.PRICE_ELITE!]: 1500,
+            [process.env.PRICE_STARTER!]: 500,
+            [process.env.PRICE_PRO!]: 1500,
+            [process.env.PRICE_ELITE!]: 3000,
           };
 
           const planMap: Record<string, string> = {
@@ -71,7 +71,7 @@ export async function POST(request: NextRequest) {
             subscription_status: subscription.status,
             plan_id: planMap[lineItem.price.id] || 'starter',
             price_id: lineItem.price.id,
-            free_uses_left: quotaMap[lineItem.price.id] || 300,
+            free_uses_left: quotaMap[lineItem.price.id] || 500,
             applications_used_this_period: 0,
             current_period_end: (subscription as any).current_period_end,
             updated_at: new Date(),
@@ -88,9 +88,9 @@ export async function POST(request: NextRequest) {
         const lineItem = subscription.items.data[0];
         
         const quotaMap: Record<string, number> = {
-          [process.env.PRICE_STARTER!]: 300,
-          [process.env.PRICE_PRO!]: 900,
-          [process.env.PRICE_ELITE!]: 1500,
+          [process.env.PRICE_STARTER!]: 500,
+          [process.env.PRICE_PRO!]: 1500,
+          [process.env.PRICE_ELITE!]: 3000,
         };
 
         const planMap: Record<string, string> = {
@@ -112,7 +112,7 @@ export async function POST(request: NextRequest) {
           subscription_status: subscription.status,
           plan_id: planMap[lineItem.price.id] || 'starter',
           price_id: lineItem.price.id,
-          free_uses_left: quotaMap[lineItem.price.id] || 300,
+          free_uses_left: quotaMap[lineItem.price.id] || 500,
           applications_used_this_period: shouldResetUsage ? 0 : (currentData?.applications_used_this_period || 0),
           current_period_end: (subscription as any).current_period_end,
           updated_at: new Date(),

@@ -465,9 +465,9 @@ export default function Page() {
           <h2 className="text-2xl font-bold mb-6 text-white text-center">Subscription Plans</h2>
           <div className="grid md:grid-cols-3 gap-6">
             {[
-              { title: 'Starter', price: '$9.99/mo', count: '300', type: 'starter' as const }, 
-              { title: 'Pro', price: '$19.99/mo', count: '900', type: 'pro' as const }, 
-              { title: 'Elite', price: '$29.99/mo', count: '1500', type: 'elite' as const }
+              { title: 'Starter', price: '$9.99/mo', count: '500', type: 'starter' as const }, 
+              { title: 'Pro', price: '$19.99/mo', count: '1500', type: 'pro' as const }, 
+              { title: 'Elite', price: '$29.99/mo', count: '3000', type: 'elite' as const }
             ].map(plan => (
               <div key={plan.title} className="bg-white text-center text-black p-6 rounded-xl shadow-md">
                 <h3 className="text-xl font-bold mb-2">{plan.title}</h3>
