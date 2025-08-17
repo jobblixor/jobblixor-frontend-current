@@ -155,7 +155,7 @@ export default function Page() {
 
     // Check if user already exists to preserve important data
     const existingUserDoc = await getDoc(doc(db, "users", formEmail));
-    let existingData = {};
+    let existingData: any = {};
     
     if (existingUserDoc.exists()) {
       existingData = existingUserDoc.data();
@@ -170,9 +170,9 @@ export default function Page() {
       await uploadBytes(resumeRef, resumeFile);
       resumeUrl = await getDownloadURL(resumeRef);
       userData["resume"] = resumeUrl;
-    } else if (existingData && (existingData as any).resume) {
+    } else if (existingData && existingData.resume) {
       // Preserve existing resume if no new one uploaded
-      userData["resume"] = (existingData as any).resume;
+      userData["resume"] = existingData.resume;
     }
 
     // Upload profile photo file
@@ -183,9 +183,9 @@ export default function Page() {
       await uploadBytes(photoRef, profilePhotoFile);
       profilePhotoUrl = await getDownloadURL(photoRef);
       userData["profilePhoto"] = profilePhotoUrl;
-    } else if (existingData && (existingData as any).profilePhoto) {
+    } else if (existingData && existingData.profilePhoto) {
       // Preserve existing photo if no new one uploaded
-      userData["profilePhoto"] = (existingData as any).profilePhoto;
+      userData["profilePhoto"] = existingData.profilePhoto;
     }
 
     // --- PRESERVE CRITICAL EXISTING DATA ---
@@ -205,21 +205,20 @@ export default function Page() {
     } else {
       console.log('Existing user - preserving critical data');
       // PRESERVE existing Stripe and subscription data
-      const existing = existingData as any;
-      userData.stripe_customer_id = existing.stripe_customer_id || null;
-      userData.plan_id = existing.plan_id || "free";
-      userData.subscription_status = existing.subscription_status || "active";
-      userData.application_count = existing.application_count || 0;
-      userData.free_uses_left = existing.free_uses_left || 5;
-      userData.created_at = existing.created_at || nowIso;
-      userData.password_hash = existing.password_hash || null;
+      userData.stripe_customer_id = existingData.stripe_customer_id || null;
+      userData.plan_id = existingData.plan_id || "free";
+      userData.subscription_status = existingData.subscription_status || "active";
+      userData.application_count = existingData.application_count || 0;
+      userData.free_uses_left = existingData.free_uses_left || 5;
+      userData.created_at = existingData.created_at || nowIso;
+      userData.password_hash = existingData.password_hash || null;
       
       // Preserve any other Stripe-related fields
       if (existingData.stripe_subscription_id) userData.stripe_subscription_id = existingData.stripe_subscription_id;
       if (existingData.stripe_price_id) userData.stripe_price_id = existingData.stripe_price_id;
       if (existingData.price_id) userData.price_id = existingData.price_id;
       if (existingData.current_period_end) userData.current_period_end = existingData.current_period_end;
-      if (existingData.applications_used_this_period) userData.applications_used_this_period = existingData.applications_used_this_period;;
+      if (existingData.applications_used_this_period) userData.applications_used_this_period = existingData.applications_used_this_period;
     }
 
     // Save all data to Firestore
@@ -626,9 +625,6 @@ export default function Page() {
         Start Auto-Applying
       </button>
     </div>
-  </div>
-)}
-
 {showEmailModal && (
   <div style={{
     position: "fixed",
