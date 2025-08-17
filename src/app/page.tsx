@@ -11,6 +11,7 @@ import { getFirestore, doc, setDoc, getDoc } from 'firebase/firestore';
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
 
+
 // --- INSERT YOUR FIREBASE CONFIG BELOW ---
 const firebaseConfig = {
   apiKey: "AIzaSyDwXqhRgDxWh3KMHvxcxBRy6L4h5imUIqo",
@@ -581,133 +582,135 @@ export default function Page() {
         </section>
       )}
 
-{showAutoApplyModal && (
-  <div style={{
-    position: "fixed",
-    top: 0, left: 0, right: 0, bottom: 0,
-    background: "rgba(0,0,0,0.7)",
-    zIndex: 10000,
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center"
-  }}>
-    <div style={{
-      background: "#fff",
-      color: "#222",
-      padding: 32,
-      borderRadius: 12,
-      boxShadow: "0 8px 32px rgba(0,0,0,0.25)",
-      textAlign: "center",
-      maxWidth: 400
-    }}>
-      <h2 style={{ fontSize: 24, fontWeight: "bold", marginBottom: 8 }}>
-        Your info has been saved!
-      </h2>
-      <p style={{ fontSize: 18, marginBottom: 20 }}>
-        Ready to start auto-applying on Indeed?
-      </p>
-      <button
-        onClick={() => {
-          setShowAutoApplyModal(false);
-          window.open('https://indeed.com', '_blank');
-        }}
-        style={{
-          background: "#0070f3",
-          color: "#fff",
-          padding: "14px 32px",
-          border: "none",
-          borderRadius: 6,
-          fontWeight: "bold",
-          fontSize: 16,
-          cursor: "pointer",
-        }}
-      >
-        Start Auto-Applying
-      </button>
-    </div>
-{showEmailModal && (
-  <div style={{
-    position: "fixed",
-    top: 0, left: 0, right: 0, bottom: 0,
-    background: "rgba(0,0,0,0.8)",
-    zIndex: 10000,
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center"
-  }}>
-    <div style={{
-      background: "#fff",
-      color: "#222",
-      padding: 32,
-      borderRadius: 12,
-      boxShadow: "0 8px 32px rgba(0,0,0,0.25)",
-      textAlign: "center",
-      maxWidth: 400,
-      width: "90%"
-    }}>
-      <h2 style={{ fontSize: 24, fontWeight: "bold", marginBottom: 8 }}>
-        Access Billing Portal
-      </h2>
-      <p style={{ fontSize: 16, marginBottom: 20, color: "#666" }}>
-        Enter your email address to manage your subscription
-      </p>
-      <input
-        type="email"
-        value={billingEmail}
-        onChange={(e) => setBillingEmail(e.target.value)}
-        placeholder="your@email.com"
-        style={{
-          width: "100%",
-          padding: "12px",
-          border: "2px solid #ddd",
-          borderRadius: 6,
-          fontSize: 16,
-          marginBottom: 20,
-          outline: "none",
-          boxSizing: "border-box"
-        }}
-        onKeyPress={(e) => {
-          if (e.key === 'Enter') {
-            handleEmailSubmit();
-          }
-        }}
-      />
-      <div style={{ display: "flex", gap: 12, justifyContent: "center" }}>
-        <button
-          onClick={handleEmailCancel}
-          style={{
-            background: "#f5f5f5",
-            color: "#333",
-            padding: "12px 24px",
-            border: "none",
-            borderRadius: 6,
-            fontWeight: "bold",
-            fontSize: 14,
-            cursor: "pointer",
-          }}
-        >
-          Cancel
-        </button>
-        <button
-          onClick={handleEmailSubmit}
-          style={{
-            background: "#0070f3",
-            color: "#fff",
-            padding: "12px 24px",
-            border: "none",
-            borderRadius: 6,
-            fontWeight: "bold",
-            fontSize: 14,
-            cursor: "pointer",
-          }}
-        >
-          Continue
-        </button>
-      </div>
-    </div>
-  </div>
-)}
+      {showAutoApplyModal && (
+        <div style={{
+          position: "fixed",
+          top: 0, left: 0, right: 0, bottom: 0,
+          background: "rgba(0,0,0,0.7)",
+          zIndex: 10000,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center"
+        }}>
+          <div style={{
+            background: "#fff",
+            color: "#222",
+            padding: 32,
+            borderRadius: 12,
+            boxShadow: "0 8px 32px rgba(0,0,0,0.25)",
+            textAlign: "center",
+            maxWidth: 400
+          }}>
+            <h2 style={{ fontSize: 24, fontWeight: "bold", marginBottom: 8 }}>
+              Your info has been saved!
+            </h2>
+            <p style={{ fontSize: 18, marginBottom: 20 }}>
+              Ready to start auto-applying on Indeed?
+            </p>
+            <button
+              onClick={() => {
+                setShowAutoApplyModal(false);
+                window.open('https://indeed.com', '_blank');
+              }}
+              style={{
+                background: "#0070f3",
+                color: "#fff",
+                padding: "14px 32px",
+                border: "none",
+                borderRadius: 6,
+                fontWeight: "bold",
+                fontSize: 16,
+                cursor: "pointer",
+              }}
+            >
+              Start Auto-Applying
+            </button>
+          </div>
+        </div>
+      )}
 
+      {showEmailModal && (
+        <div style={{
+          position: "fixed",
+          top: 0, left: 0, right: 0, bottom: 0,
+          background: "rgba(0,0,0,0.8)",
+          zIndex: 10000,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center"
+        }}>
+          <div style={{
+            background: "#fff",
+            color: "#222",
+            padding: 32,
+            borderRadius: 12,
+            boxShadow: "0 8px 32px rgba(0,0,0,0.25)",
+            textAlign: "center",
+            maxWidth: 400,
+            width: "90%"
+          }}>
+            <h2 style={{ fontSize: 24, fontWeight: "bold", marginBottom: 8 }}>
+              Access Billing Portal
+            </h2>
+            <p style={{ fontSize: 16, marginBottom: 20, color: "#666" }}>
+              Enter your email address to manage your subscription
+            </p>
+            <input
+              type="email"
+              value={billingEmail}
+              onChange={(e) => setBillingEmail(e.target.value)}
+              placeholder="your@email.com"
+              style={{
+                width: "100%",
+                padding: "12px",
+                border: "2px solid #ddd",
+                borderRadius: 6,
+                fontSize: 16,
+                marginBottom: 20,
+                outline: "none",
+                boxSizing: "border-box"
+              }}
+              onKeyPress={(e) => {
+                if (e.key === 'Enter') {
+                  handleEmailSubmit();
+                }
+              }}
+            />
+            <div style={{ display: "flex", gap: 12, justifyContent: "center" }}>
+              <button
+                onClick={handleEmailCancel}
+                style={{
+                  background: "#f5f5f5",
+                  color: "#333",
+                  padding: "12px 24px",
+                  border: "none",
+                  borderRadius: 6,
+                  fontWeight: "bold",
+                  fontSize: 14,
+                  cursor: "pointer",
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleEmailSubmit}
+                style={{
+                  background: "#0070f3",
+                  color: "#fff",
+                  padding: "12px 24px",
+                  border: "none",
+                  borderRadius: 6,
+                  fontWeight: "bold",
+                  fontSize: 14,
+                  cursor: "pointer",
+                }}
+              >
+                Continue
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
