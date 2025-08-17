@@ -3,8 +3,6 @@ import { stripe } from '@/lib/stripe';
 import { getDb } from '@/lib/firebaseAdmin';
 import Stripe from 'stripe';
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
-
 export const runtime = 'nodejs';
 
 async function buffer(readable: ReadableStream<Uint8Array>) {
@@ -71,7 +69,7 @@ export async function POST(request: NextRequest) {
             subscription_status: subscription.status,
             plan_id: planMap[lineItem.price.id] || 'starter',
             price_id: lineItem.price.id,
-            application_quota_monthly: quotaMap[lineItem.price.id] || 300,
+            free_uses_left: quotaMap[lineItem.price.id] || 300,
             applications_used_this_period: 0,
             current_period_end: (subscription as any).current_period_end,
             updated_at: new Date(),
@@ -112,7 +110,7 @@ export async function POST(request: NextRequest) {
           subscription_status: subscription.status,
           plan_id: planMap[lineItem.price.id] || 'starter',
           price_id: lineItem.price.id,
-          application_quota_monthly: quotaMap[lineItem.price.id] || 300,
+          free_uses_left: quotaMap[lineItem.price.id] || 300,
           applications_used_this_period: shouldResetUsage ? 0 : (currentData?.applications_used_this_period || 0),
           current_period_end: (subscription as any).current_period_end,
           updated_at: new Date(),
