@@ -3,6 +3,8 @@ import { stripe } from '@/lib/stripe';
 import { getDb } from '@/lib/firebaseAdmin';
 import Stripe from 'stripe';
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 export const runtime = 'nodejs';
 
 async function buffer(readable: ReadableStream<Uint8Array>) {
