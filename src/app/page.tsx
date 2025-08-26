@@ -430,7 +430,7 @@ export default function Page() {
 
           <section className="text-center mt-16 mb-10">
             <h2 className="text-2xl font-bold">Ready to supercharge your job search?</h2>
-            <p className="mt-2">Try Jobblixor with 5 free applications, then subscribe for up to 1,500 applications monthly.</p>
+            <p className="mt-2">Try Jobblixor with 5 free applications, then subscribe for up to 3,000 applications monthly.</p>
             <button 
               onClick={() => setActiveTab('subscriptions')}
               className="mt-4 bg-white text-blue-700 px-6 py-3 rounded-xl font-semibold shadow-md hover:shadow-lg"
