@@ -16,7 +16,7 @@ export const metadata: Metadata = {
   title: "Jobblixor",
   description: "AI job application automation tool",
   icons: {
-    icon: "/favicon.ico", // or "/favicon.png" if you use a PNG
+    icon: "/favicon.png",
   },
 };
 
