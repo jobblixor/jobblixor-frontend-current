@@ -9,7 +9,7 @@ import Image from 'next/image';
 import { initializeApp } from 'firebase/app';
 import { getFirestore, doc, setDoc, getDoc } from 'firebase/firestore';
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
-
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
 
 
 // --- INSERT YOUR FIREBASE CONFIG BELOW ---
@@ -25,6 +25,7 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
+const auth = getAuth(app);
 
 export default function Page() {
   const tabs = ['home', 'directions', 'subscriptions', 'check', 'about'] as const;
@@ -131,102 +132,99 @@ export default function Page() {
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
   e.preventDefault();
   setSubmitting(true);
-  setResponseViewer(["Submitting your info..."]);
+  setResponseViewer(["Creating/logging in to your account..."]);
 
   const formData = new FormData(e.currentTarget);
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const userData: Record<string, any> = {};
-  formData.forEach((value, key) => {
-    // Exclude file inputs because we upload them separately
-    if (key !== "resume") {
-      userData[key] = value;
-    }
-  });
-
   const formEmail = (formData.get("email") as string)?.trim();
-  if (!formEmail) {
-    setResponseViewer(["⚠️ Please enter a valid email."]);
+  const formPassword = (formData.get("password") as string)?.trim();
+
+  if (!formEmail || !formPassword) {
+    setResponseViewer(["⚠️ Please enter both email and password."]);
+    setSubmitting(false);
+    return;
+  }
+
+  if (formPassword.length < 6) {
+    setResponseViewer(["⚠️ Password must be at least 6 characters."]);
     setSubmitting(false);
     return;
   }
 
   try {
-    const storage = getStorage(app);
-
-    // Check if user already exists to preserve important data
-    const existingUserDoc = await getDoc(doc(db, "users", formEmail));
+    let userCredential;
+    try {
+      userCredential = await signInWithEmailAndPassword(auth, formEmail, formPassword);
+      setResponseViewer(["Logged in successfully! Updating your profile..."]);
+    } catch (signInError: any) {
+      if (signInError.code === 'auth/user-not-found' || signInError.code === 'auth/wrong-password') {
+        userCredential = await createUserWithEmailAndPassword(auth, formEmail, formPassword);
+        setResponseViewer(["New account created! Setting up your profile..."]);
+      } else {
+        throw signInError;
+      }
+    }
+    const user = userCredential.user;
+    // Now save profile data using UID instead of email
+    const userData: Record<string, any> = {};
+    formData.forEach((value, key) => {
+      if (key !== "resume" && key !== "password") {
+        userData[key] = value;
+      }
+    });
+    const existingUserDoc = await getDoc(doc(db, "users", user.uid));
     let existingData: any = {};
-    
     if (existingUserDoc.exists()) {
       existingData = existingUserDoc.data();
-      console.log('User exists - preserving existing data:', existingData);
     }
-
-    // Upload resume file
+    const storage = getStorage(app);
     const resumeFile = formData.get("resume") as File | null;
     let resumeUrl = "";
     if (resumeFile && resumeFile.size > 0) {
-      const resumeRef = ref(storage, `resumes/${formEmail}/${resumeFile.name}`);
+      const resumeRef = ref(storage, `resumes/${user.uid}/${resumeFile.name}`);
       await uploadBytes(resumeRef, resumeFile);
       resumeUrl = await getDownloadURL(resumeRef);
       userData["resume"] = resumeUrl;
-    } else if (existingData && existingData.resume) {
-      // Preserve existing resume if no new one uploaded
+    } else if (existingData?.resume) {
       userData["resume"] = existingData.resume;
     }
-
-    // --- PRESERVE CRITICAL EXISTING DATA ---
     const nowIso = new Date().toISOString();
     userData.updated_at = nowIso;
-
-    // Only set these fields for NEW users
+    userData.email = formEmail;
     if (!existingUserDoc.exists()) {
-      console.log('New user - setting default values');
       userData.application_count = 0;
       userData.created_at = nowIso;
       userData.free_uses_left = 5;
       userData.plan_id = "free";
       userData.subscription_status = "active";
-      userData.password_hash = null;
-      userData.stripe_customer_id = null;
     } else {
-      console.log('Existing user - preserving critical data');
-      // PRESERVE existing Stripe and subscription data
       userData.stripe_customer_id = existingData.stripe_customer_id || null;
       userData.plan_id = existingData.plan_id || "free";
       userData.subscription_status = existingData.subscription_status || "active";
       userData.application_count = existingData.application_count || 0;
       userData.free_uses_left = existingData.free_uses_left || 5;
       userData.created_at = existingData.created_at || nowIso;
-      userData.password_hash = existingData.password_hash || null;
-      
-      // Preserve any other Stripe-related fields
       if (existingData.stripe_subscription_id) userData.stripe_subscription_id = existingData.stripe_subscription_id;
       if (existingData.stripe_price_id) userData.stripe_price_id = existingData.stripe_price_id;
-      if (existingData.price_id) userData.price_id = existingData.price_id;
-      if (existingData.current_period_end) userData.current_period_end = existingData.current_period_end;
-      if (existingData.applications_used_this_period) userData.applications_used_this_period = existingData.applications_used_this_period;
     }
-
-    // Save all data to Firestore
-    await setDoc(doc(db, "users", formEmail), userData);
-
-    // Save email to localStorage for Chrome extension
+    await setDoc(doc(db, "users", user.uid), userData);
+    localStorage.setItem("jobblixor_uid", user.uid);
     localStorage.setItem("email", formEmail);
-    
-
     setResponseViewer([
-      "✅ Info saved to Jobblixor! Resume uploaded.",
-      "You can now run Jobblixor from Indeed! Open an Indeed job page, click the Jobblixor extension, enter how many jobs you would like it to apply to, then press Start Auto-Applying. Jobblixor applies inside your browser using the settings you just saved."
+      "✅ Account secured and info saved!",
+      "Your data is now protected with your password.",
+      "You can now run Jobblixor from Indeed using your email and password."
     ]);
-    console.log("Jobblixor: Saved email to localStorage:", formEmail);
-    setShowAutoApplyModal(true); // <-- THIS SHOWS THE MODAL
-  } catch (error) {
-    setResponseViewer(["⚠️ Failed to save info or upload files. Try again."]);
-    console.error(error);
+    setShowAutoApplyModal(true);
+  } catch (error: any) {
+    console.error("Auth error:", error);
+    if (error.code === 'auth/email-already-in-use') {
+      setResponseViewer(["⚠️ Email already registered. Please sign in or use password reset."]);
+    } else if (error.code === 'auth/weak-password') {
+      setResponseViewer(["⚠️ Password too weak. Use at least 6 characters."]);
+    } else {
+      setResponseViewer([`⚠️ Error: ${error.message}`]);
+    }
   }
-
   setSubmitting(false);
 };
 
@@ -302,22 +300,22 @@ export default function Page() {
             </p>
             <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {[
-                { label: 'Job Title', name: 'job_title', placeholder: 'Software Engineer' },
-                { label: 'Location', name: 'location', placeholder: 'San Francisco, CA' },
-                { label: 'Zip Code', name: 'zip_code', placeholder: '12345' },
-                { label: 'Street Address', name: 'street_address', placeholder: '123 Main Street' },
-                { label: 'First Name', name: 'first_name', placeholder: 'John' },
-                { label: 'Last Name', name: 'last_name', placeholder: 'Doe' },
-                { label: 'Phone Number', name: 'phone_number', placeholder: '(123) 456-7890' },
-                { label: 'Email', name: 'email', placeholder: 'example@email.com' },
-                { label: 'Preferred Salary', name: 'preferred_salary', placeholder: '$80,000' },
-                { label: 'Job Title Relevant Experience', name: 'job_title_relevant_experience', placeholder: 'IT Technician' },
-                { label: 'Company Relevant Experience', name: 'company_relevant_experience', placeholder: 'Microsoft' },
-
-              ].map(({ label, name, placeholder }) => (
+                { label: 'Job Title', name: 'job_title', placeholder: 'Software Engineer', type: 'text' },
+                { label: 'Location', name: 'location', placeholder: 'San Francisco, CA', type: 'text' },
+                { label: 'Zip Code', name: 'zip_code', placeholder: '12345', type: 'text' },
+                { label: 'Street Address', name: 'street_address', placeholder: '123 Main Street', type: 'text' },
+                { label: 'First Name', name: 'first_name', placeholder: 'John', type: 'text' },
+                { label: 'Last Name', name: 'last_name', placeholder: 'Doe', type: 'text' },
+                { label: 'Phone Number', name: 'phone_number', placeholder: '(123) 456-7890', type: 'text' },
+                { label: 'Email', name: 'email', placeholder: 'example@email.com', type: 'email' },
+                { label: 'Password', name: 'password', type: 'password', placeholder: 'Enter secure password' },
+                { label: 'Preferred Salary', name: 'preferred_salary', placeholder: '$80,000', type: 'text' },
+                { label: 'Job Title Relevant Experience', name: 'job_title_relevant_experience', placeholder: 'IT Technician', type: 'text' },
+                { label: 'Company Relevant Experience', name: 'company_relevant_experience', placeholder: 'Microsoft', type: 'text' },
+              ].map(({ label, name, type, placeholder }) => (
                 <div key={name}>
                   <label className="block text-white mb-1">{label}</label>
-                  <input name={name} type="text" placeholder={placeholder} className="w-full p-3 rounded-lg bg-blue-100 text-black" />
+                  <input name={name} type={type || 'text'} placeholder={placeholder} className="w-full p-3 rounded-lg bg-blue-100 text-black" />
                 </div>
               ))}
 
