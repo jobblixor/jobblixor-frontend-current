@@ -6,7 +6,7 @@ import React, { useState, FormEvent } from "react";
 import Image from 'next/image';
 
 // --- NEW: Firebase imports ---
-import { initializeApp, getApp } from 'firebase/app';
+import { initializeApp, getApp, FirebaseApp } from 'firebase/app';
 import { getFirestore, doc, setDoc, getDoc } from 'firebase/firestore';
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
@@ -24,7 +24,7 @@ const firebaseConfig = {
 // --- END FIREBASE CONFIG ---
 
 // --- FIXED: Only initialize Firebase once ---
-let app;
+let app: FirebaseApp;
 try {
   app = getApp();
 } catch {
