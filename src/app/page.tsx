@@ -6,7 +6,7 @@ import React, { useState, FormEvent } from "react";
 import Image from 'next/image';
 
 // --- NEW: Firebase imports ---
-import { initializeApp } from 'firebase/app';
+import { initializeApp, getApp } from 'firebase/app';
 import { getFirestore, doc, setDoc, getDoc } from 'firebase/firestore';
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
@@ -23,7 +23,13 @@ const firebaseConfig = {
 };
 // --- END FIREBASE CONFIG ---
 
-const app = initializeApp(firebaseConfig);
+// --- FIXED: Only initialize Firebase once ---
+let app;
+try {
+  app = getApp();
+} catch {
+  app = initializeApp(firebaseConfig);
+}
 const db = getFirestore(app);
 const auth = getAuth(app);
 
@@ -207,6 +213,11 @@ export default function Page() {
       if (existingData.stripe_price_id) userData.stripe_price_id = existingData.stripe_price_id;
     }
     await setDoc(doc(db, "users", user.uid), userData);
+    // NEW: Save email_to_uid mapping
+    await setDoc(doc(db, "email_to_uid", formEmail), {
+      uid: user.uid,
+      created_at: nowIso
+    });
     localStorage.setItem("jobblixor_uid", user.uid);
     localStorage.setItem("email", formEmail);
     setResponseViewer([
@@ -240,14 +251,22 @@ export default function Page() {
     setApplicationCount(null);
     
     try {
-      const userDoc = await getDoc(doc(db, "users", emailInput.trim()));
-      
+      // First get UID from email mapping
+      const emailDoc = await getDoc(doc(db, "email_to_uid", emailInput.trim()));
+      if (!emailDoc.exists()) {
+        setCheckError('No account found with this email address.');
+        setChecking(false);
+        return;
+      }
+      const uid = emailDoc.data().uid;
+      // Then get user data by UID
+      const userDoc = await getDoc(doc(db, "users", uid));
       if (userDoc.exists()) {
         const userData = userDoc.data();
         const freeUsesLeft = userData.free_uses_left || 0;
         setApplicationCount(freeUsesLeft);
       } else {
-        setCheckError('No account found with this email address.');
+        setCheckError('User data not found.');
       }
     } catch (error) {
       console.error('Error fetching user data:', error);
