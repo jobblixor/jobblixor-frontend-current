@@ -182,14 +182,20 @@ export default function Page() {
     if (existingUserDoc.exists()) {
       existingData = existingUserDoc.data();
     }
-    const storage = getStorage(app);
+    // === RESUME UPLOAD SECTION (improved error handling) ===
     const resumeFile = formData.get("resume") as File | null;
-    let resumeUrl = "";
     if (resumeFile && resumeFile.size > 0) {
-      const resumeRef = ref(storage, `resumes/${user.uid}/${resumeFile.name}`);
-      await uploadBytes(resumeRef, resumeFile);
-      resumeUrl = await getDownloadURL(resumeRef);
-      userData["resume"] = resumeUrl;
+      try {
+        const storage = getStorage(app);
+        const resumeRef = ref(storage, `resumes/${user.uid}/${resumeFile.name}`);
+        await uploadBytes(resumeRef, resumeFile);
+        const resumeUrl = await getDownloadURL(resumeRef);
+        userData["resume"] = resumeUrl;
+        console.log("Resume uploaded successfully");
+      } catch (resumeError) {
+        console.error("Resume upload failed:", resumeError);
+        // Continue without resume - don't fail the entire account creation
+      }
     } else if (existingData?.resume) {
       userData["resume"] = existingData.resume;
     }
