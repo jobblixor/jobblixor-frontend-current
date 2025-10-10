@@ -162,7 +162,7 @@ export default function Page() {
       userCredential = await signInWithEmailAndPassword(auth, formEmail, formPassword);
       setResponseViewer(["Logged in successfully! Updating your profile..."]);
     } catch (signInError: any) {
-      if (signInError.code === 'auth/user-not-found' || signInError.code === 'auth/wrong-password') {
+      if (signInError.code === 'auth/user-not-found' || signInError.code === 'auth/wrong-password' || signInError.code === 'auth/invalid-credential') {
         userCredential = await createUserWithEmailAndPassword(auth, formEmail, formPassword);
         setResponseViewer(["New account created! Setting up your profile..."]);
       } else {
