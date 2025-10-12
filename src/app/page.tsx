@@ -145,13 +145,13 @@ export default function Page() {
   const formPassword = (formData.get("password") as string)?.trim();
 
   if (!formEmail || !formPassword) {
-    setResponseViewer(["âš ï¸ Please enter both email and password."]);
+    setResponseViewer(["Please enter both email and password."]);
     setSubmitting(false);
     return;
   }
 
   if (formPassword.length < 6) {
-    setResponseViewer(["âš ï¸ Password must be at least 6 characters."]);
+    setResponseViewer(["Password must be at least 6 characters."]);
     setSubmitting(false);
     return;
   }
@@ -247,7 +247,7 @@ export default function Page() {
     localStorage.setItem("jobblixor_uid", user.uid);
     localStorage.setItem("email", formEmail);
     setResponseViewer([
-      "âœ… Account secured and info saved!",
+      "Account secured and info saved!",
       "Your data is now protected with your password.",
       "You can now run Jobblixor from Indeed using your email and password."
     ]);
@@ -255,11 +255,11 @@ export default function Page() {
   } catch (error: any) {
     console.error("Auth error:", error);
     if (error.code === 'auth/email-already-in-use') {
-      setResponseViewer(["âš ï¸ Email already registered. Please sign in or use password reset."]);
+      setResponseViewer(["Email already registered. Please sign in or use password reset."]);
     } else if (error.code === 'auth/weak-password') {
-      setResponseViewer(["âš ï¸ Password too weak. Use at least 6 characters."]);
+      setResponseViewer(["Password too weak. Use at least 6 characters."]);
     } else {
-      setResponseViewer([`âš ï¸ Error: ${error.message}`]);
+      setResponseViewer([`Error: ${error.message}`]);
     }
   }
   setSubmitting(false);
