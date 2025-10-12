@@ -557,12 +557,15 @@ export default function Page() {
             </div>
 
             <div>
-              <h3 className="text-xl font-semibold mb-3">Step 4 - Run it from Indeed (Updated)</h3>
+              <h3 className="text-xl font-semibold mb-3">Step 4 - Run it from Indeed</h3>
               <p className="text-lg mb-4">
-                Open an Indeed job page, click the Jobblixor extension icon, then press Start Auto-Applying.
+                Open an Indeed job search page, click the Jobblixor extension icon, enter your email and password, then press Start Auto-Apply.
+              </p>
+              <p className="text-lg mb-4 font-semibold text-yellow-200">
+                ⚠️ Important: Keep the Indeed tab open and visible while automation runs. Jobblixor will show a red alert box if it needs your help with any fields it cannot fill automatically.
               </p>
               <p className="text-lg mb-4">
-                Keep the job tab open while it runs. You do not need Jobblixor.com open.
+                When you see a red alert, simply fill in the highlighted fields and click "Continue Automation" to resume. The extension will handle everything else.
               </p>
             </div>
           </div>
@@ -570,6 +573,26 @@ export default function Page() {
           <div className="mt-8 p-6 bg-white/10 rounded-lg">
             <p className="text-lg">
               <strong>Note:</strong> Jobblixor uses your saved preferences from your account and applies to jobs inside your browser while you are logged in.
+            </p>
+          </div>
+
+          {/* Manual Intervention Warning - INSIDE Directions section */}
+          <div className="mt-8 p-6 bg-yellow-500/20 border-2 border-yellow-400 rounded-lg">
+            <h3 className="text-xl font-semibold mb-3 text-yellow-200">⚠️ Manual Intervention</h3>
+            <p className="text-lg mb-2">
+              Jobblixor automates most application fields, but some employers ask unique questions that require your input.
+            </p>
+            <p className="text-lg mb-2">
+              <strong>When manual input is needed:</strong>
+            </p>
+            <ul className="list-disc list-inside space-y-2 text-lg ml-4">
+              <li>A red alert box will appear on the page</li>
+              <li>Required fields will be highlighted in yellow</li>
+              <li>Fill in the highlighted fields with your answers</li>
+              <li>Click "Continue Automation" to resume</li>
+            </ul>
+            <p className="text-lg mt-4">
+              Stay on the Indeed tab during automation to catch these alerts and keep the process running smoothly.
             </p>
           </div>
         </section>
