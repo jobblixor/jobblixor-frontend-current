@@ -311,7 +311,7 @@ export default function Page() {
           <section className="w-full py-4 text-center">
             <h1 className="text-4xl md:text-5xl font-bold">Automate Your Job Search</h1>
             <p className="mt-4 text-lg md:text-xl max-w-2xl mx-auto">
-              Streamline your job search with our Chrome extension! Jobblixor applies inside your browser while you browse. Click the directions button to get set up and see how it works. Have questions or feedback? Reach out anytime at jobblixor@gmail.com. I check emails daily.
+              Streamline your job search with our Chrome extension! Jobblixor applies inside your browser while you browse. If you’d like, you can watch the entire process unfold in real time. Click the directions button to get set up and see how it works. Have questions or feedback? Reach out anytime at jobblixor@gmail.com. I check emails daily.
             </p>
           </section>
 

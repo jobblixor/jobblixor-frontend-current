@@ -1,0 +1,24 @@
+Steps to get jobblixor functional for launch: ✅
+1. Continue fixing up phase 2 ✅
+2. Once phase 2 is all fixed make phase 1 be able to run automatically
+3. Tweak phase 1 as you stumble across different easy apply forms
+3.5. Add preferred salary into the search alongside with the job title.
+4. Do the full test with the jobblixor extension make sure it can apply to 100s of jobs.
+5. Add security on firebase.
+6. Add 2 factor authentication on all accounts, vercel, GitHub, anymore if i can think of any.
+
+A few more tweaks to add to the jobblixor extension
+Make sure it fills out all of the required fields before it clicks continue.
+Make sure it can fill out more than one easy spot job per trigger.
+Integrate the download link of the jobblixor extension into the frontend.
+Two factor authentication on everything 
+Get stripe out of test mode and into live mode
+
+Steps to get jobblixor functional for launch:
+   Continue fixing up phase 2
+   Once phase 2 is all fixed make phase 1 be able to run automatically
+   Tweak phase 1 as you stumble across different easy apply forms
+3.5. Add preferred salary into the search alongside with the job title.
+   Do the full test with the jobblixor extension make sure it can apply to 100s of jobs.
+   Add security on firebase.
+   Add 2 factor authentication on all accounts, vercel, GitHub, anymore if i can think of any-

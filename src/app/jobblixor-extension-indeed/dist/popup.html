@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Jobblixor Auto-Apply</title>
+  <style>
+    body {
+      background: linear-gradient(135deg, #0a60b8 0%, #1c37ad 100%);
+      margin: 0;
+      font-family: 'Segoe UI', Arial, sans-serif;
+      min-width: 320px;
+      min-height: 500px;
+      color: white;
+    }
+    
+    .dashboard-card {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      padding: 20px;
+      margin: 16px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    
+    .header {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    
+    h2 {
+      margin: 0;
+      font-size: 1.5rem;
+      color: #fff;
+      font-weight: bold;
+      letter-spacing: 1px;
+    }
+    
+    .subtitle {
+      font-size: 0.9rem;
+      opacity: 0.8;
+      margin-top: 5px;
+    }
+    
+    .form-group {
+      margin-bottom: 15px;
+    }
+    
+    label {
+      display: block;
+      color: #fff;
+      font-size: 0.9rem;
+      margin-bottom: 5px;
+      font-weight: 500;
+    }
+    
+    input[type="email"], input[type="number"] {
+      width: 100%;
+      padding: 10px;
+      border-radius: 8px;
+      border: none;
+      font-size: 0.9rem;
+      outline: none;
+      background: rgba(255, 255, 255, 0.9);
+      box-sizing: border-box;
+    }
+    
+    .job-count-container {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .job-count-input {
+      flex: 1;
+      max-width: 80px;
+      text-align: center;
+      font-weight: bold;
+    }
+    
+    .job-count-label {
+      font-size: 0.85rem;
+      opacity: 0.9;
+    }
+    
+    .stats-container {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+      padding: 15px;
+      margin-bottom: 15px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    
+    .stat-row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 8px;
+      font-size: 0.9rem;
+    }
+    
+    .stat-row:last-child {
+      margin-bottom: 0;
+    }
+    
+    .stat-label {
+      opacity: 0.9;
+    }
+    
+    .stat-value {
+      font-weight: bold;
+    }
+    
+    .applications-left {
+      color: #4ade80;
+    }
+    
+    .warning {
+      color: #fbbf24;
+    }
+    
+    .danger {
+      color: #f87171;
+    }
+    
+    /* UPDATED: Four-button control system */
+    .controls {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 15px;
+      flex-wrap: wrap;
+    }
+    
+    button {
+      flex: 1;
+      border: none;
+      border-radius: 8px;
+      padding: 12px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      min-width: 75px;
+      color: #fff;
+    }
+    
+    button:hover:not(:disabled) {
+      transform: translateY(-1px);
+    }
+    
+    button:disabled {
+      background: #6b7280;
+      cursor: not-allowed;
+      transform: none;
+      opacity: 0.6;
+    }
+    
+    /* Button-specific styles */
+    .btn-start {
+      background: #059669;
+      display: block;
+    }
+    
+    .btn-start:hover:not(:disabled) {
+      background: #047857;
+    }
+    
+    .btn-pause {
+      background: #d97706;
+      display: none;
+    }
+    
+    .btn-pause:hover:not(:disabled) {
+      background: #b45309;
+    }
+    
+    .btn-resume {
+      background: #0d9488;
+      display: none;
+    }
+    
+    .btn-resume:hover:not(:disabled) {
+      background: #0f766e;
+    }
+    
+    .btn-stop {
+      background: #dc2626;
+      display: none;
+    }
+    
+    .btn-stop:hover:not(:disabled) {
+      background: #b91c1c;
+    }
+    
+    /* Button state management - will be controlled by JavaScript */
+    .btn-hidden {
+      display: none !important;
+    }
+    
+    .btn-visible {
+      display: block;
+    }
+    
+    .status-container {
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 8px;
+      padding: 12px;
+      font-size: 0.85rem;
+      line-height: 1.4;
+      min-height: 60px;
+      max-height: 120px;
+      overflow-y: auto;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .pulse {
+      animation: pulse 2s infinite;
+    }
+    
+    .paused-pulse {
+      animation: pausedPulse 1s infinite;
+    }
+    
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.7; }
+    }
+    
+    @keyframes pausedPulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+    
+    .instruction {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      padding: 12px;
+      margin-bottom: 15px;
+      font-size: 0.85rem;
+      border-left: 4px solid #4ade80;
+    }
+  </style>
+</head>
+<body>
+  <div class="dashboard-card">
+    <div class="header">
+      <h2>Jobblixor Auto-Apply</h2>
+      <div class="subtitle">Automate your job applications</div>
+    </div>
+
+    <div class="instruction">
+      <strong>Instructions:</strong> Navigate to Indeed.com, then click "Start Auto-Apply". The bot will search for jobs and automatically apply to Easy Apply positions.
+    </div>
+
+    <div class="form-group">
+      <label for="email">Enter your email for applications:</label>
+      <input type="email" id="email" placeholder="your.email@gmail.com" />
+    </div>
+    <div class="form-group">
+      <label for="password">Password:</label>
+      <input type="password" id="password" placeholder="Password" />
+    </div>
+
+    <div class="form-group">
+      <label for="jobCount">Number of jobs to apply to:</label>
+      <div class="job-count-container">
+        <input type="number" id="jobCount" class="job-count-input" value="10" min="1" max="100" />
+        <span class="job-count-label">jobs (max 100)</span>
+      </div>
+    </div>
+
+    <div class="stats-container">
+      <div class="stat-row">
+        <span class="stat-label">Applications left:</span>
+        <span class="stat-value applications-left" id="applicationsLeft">Loading...</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-label">Status:</span>
+        <span class="stat-value" id="currentStatus">Ready</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-label">Applied this session:</span>
+        <span class="stat-value" id="appliedCount">0</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-label">Target jobs:</span>
+        <span class="stat-value" id="targetJobs">10</span>
+      </div>
+    </div>
+
+    <!-- UPDATED: Four-button control system -->
+    <div class="controls">
+      <button id="startBtn" class="btn-start">Start Auto-Apply</button>
+      <button id="pauseBtn" class="btn-pause">Pause</button>
+      <button id="resumeBtn" class="btn-resume">Resume</button>
+      <button id="stopBtn" class="btn-stop">Stop</button>
+    </div>
+
+    <div class="status-container" id="status">
+      Ready to start! Make sure you're on Indeed.com.
+    </div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+    import { getAuth, signInWithEmailAndPassword } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+    import { getFirestore, doc, getDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+
+    // Make Firebase available globally
+    window.firebaseAuth = { initializeApp, getAuth, signInWithEmailAndPassword };
+    window.firebaseFirestore = { getFirestore, doc, getDoc };
+    
+    // Initialize Firebase
+    const firebaseConfig = {
+      apiKey: "AIzaSyDwXqhRgDxWh3KMHvxcxBRy6L4h5imUIqo",
+      authDomain: "jobblixor2.firebaseapp.com",
+      projectId: "jobblixor2",
+      storageBucket: "jobblixor2.firebasestorage.app",
+      messagingSenderId: "437887766629",
+      appId: "1:437887766629:web:882a686065fd6db189f68c"
+    };
+    window.firebaseApp = initializeApp(firebaseConfig);
+    window.firebaseAuthInstance = getAuth(window.firebaseApp);
+    window.firebaseDb = getFirestore(window.firebaseApp);
+  </script>
+  <script src="popup.js"></script>
+</body>
+</html>

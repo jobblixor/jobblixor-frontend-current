@@ -1,0 +1,20 @@
+// After job details panel loads:
+let easyApplyUrl = null;
+const applyBtn = detailsPanel.querySelector('.jobsearch-IndeedApplyButton button');
+if (applyBtn) {
+    const anchor = applyBtn.closest('a[href]');
+    if (anchor) easyApplyUrl = anchor.href;
+}
+if (!easyApplyUrl) {
+    const altAnchor = detailsPanel.querySelector('a[href*="applystart"]');
+    if (altAnchor) easyApplyUrl = altAnchor.href;
+}
+if (!easyApplyUrl && applyBtn && applyBtn.dataset.href) {
+    easyApplyUrl = applyBtn.dataset.href;
+}
+if (easyApplyUrl) {
+    chrome.runtime.sendMessage({ action: 'OPEN_EASY_APPLY_TAB', url: easyApplyUrl, jobTitle });
+    // wait for new tab, then proceed
+} else {
+    // log and skip
+}

@@ -1,0 +1,12 @@
+if (easyApplyUrl) {
+    chrome.runtime.sendMessage({
+        action: 'OPEN_EASY_APPLY_TAB',
+        url: easyApplyUrl,
+        jobTitle: jobTitle // if you want to track/log it
+    });
+    console.log('[Jobblixor] Sent Easy Apply URL to background:', easyApplyUrl);
+    // Wait for confirmation/next steps, or move to next job
+} else {
+    console.log('[Jobblixor] No Easy Apply URL found for job:', jobTitle);
+    // Handle failure (skip to next job)
+}

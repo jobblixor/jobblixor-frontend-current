@@ -1,0 +1,28 @@
+import json
+import datetime
+
+def save_user_data(user_input):
+    now = datetime.datetime.utcnow().isoformat()
+    user_data = {
+        "first_name": user_input.get("first_name"),
+        "last_name": user_input.get("last_name"),
+        "email": user_input.get("email"),
+        "phone": user_input.get("phone"),
+        "job_title": user_input.get("job_title"),
+        "location": user_input.get("location"),
+        "salary": user_input.get("preferred_salary", ""),
+        "resume": user_input.get("resume_path"),
+        "profile_photo": user_input.get("profile_photo", None),
+        "application_count": 0,
+        "free_uses_left": 5,
+        "plan_id": "free",
+        "subscription_status": "active",
+        "created_at": now,
+        "updated_at": now,
+        "stripe_customer_id": None
+    }
+
+    with open("user_data.json", "w") as f:
+        json.dump(user_data, f, indent=4)
+
+    print("✅ User data saved to user_data.json")
