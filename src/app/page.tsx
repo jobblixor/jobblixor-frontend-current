@@ -145,13 +145,13 @@ export default function Page() {
   const formPassword = (formData.get("password") as string)?.trim();
 
   if (!formEmail || !formPassword) {
-    setResponseViewer(["⚠️ Please enter both email and password."]);
+    setResponseViewer(["âš ï¸ Please enter both email and password."]);
     setSubmitting(false);
     return;
   }
 
   if (formPassword.length < 6) {
-    setResponseViewer(["⚠️ Password must be at least 6 characters."]);
+    setResponseViewer(["âš ï¸ Password must be at least 6 characters."]);
     setSubmitting(false);
     return;
   }
@@ -227,7 +227,7 @@ export default function Page() {
     localStorage.setItem("jobblixor_uid", user.uid);
     localStorage.setItem("email", formEmail);
     setResponseViewer([
-      "✅ Account secured and info saved!",
+      "âœ… Account secured and info saved!",
       "Your data is now protected with your password.",
       "You can now run Jobblixor from Indeed using your email and password."
     ]);
@@ -235,11 +235,11 @@ export default function Page() {
   } catch (error: any) {
     console.error("Auth error:", error);
     if (error.code === 'auth/email-already-in-use') {
-      setResponseViewer(["⚠️ Email already registered. Please sign in or use password reset."]);
+      setResponseViewer(["âš ï¸ Email already registered. Please sign in or use password reset."]);
     } else if (error.code === 'auth/weak-password') {
-      setResponseViewer(["⚠️ Password too weak. Use at least 6 characters."]);
+      setResponseViewer(["âš ï¸ Password too weak. Use at least 6 characters."]);
     } else {
-      setResponseViewer([`⚠️ Error: ${error.message}`]);
+      setResponseViewer([`âš ï¸ Error: ${error.message}`]);
     }
   }
   setSubmitting(false);
@@ -311,7 +311,7 @@ export default function Page() {
           <section className="w-full py-4 text-center">
             <h1 className="text-4xl md:text-5xl font-bold">Automate Your Job Search</h1>
             <p className="mt-4 text-lg md:text-xl max-w-2xl mx-auto">
-              Streamline your job search with our Chrome extension! Jobblixor applies inside your browser while you browse. If you’d like, you can watch the entire process unfold in real time. Click the directions button to get set up and see how it works. Have questions or feedback? Reach out anytime at jobblixor@gmail.com. I check emails daily.
+              Streamline your job search with our Chrome extension! Jobblixor applies inside your browser while you browse. If youâ€™d like, you can watch the entire process unfold in real time. Click the directions button to get set up and see how it works. Have questions or feedback? Reach out anytime at jobblixor@gmail.com. I check emails daily.
             </p>
           </section>
 

@@ -1,6 +1,0 @@
- npx vite build
- Copy-Item manifest.json dist\
- Copy-Item icons dist\icons\ -Recurse
- Copy-Item src\popup.html dist\
- Copy-Item src\popup.js dist\
-
