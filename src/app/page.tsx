@@ -9,7 +9,7 @@ import Image from 'next/image';
 import { initializeApp, getApp, FirebaseApp } from 'firebase/app';
 import { getFirestore, doc, setDoc, getDoc } from 'firebase/firestore';
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendPasswordResetEmail } from 'firebase/auth';
 
 
 // --- INSERT YOUR FIREBASE CONFIG BELOW ---
@@ -34,7 +34,7 @@ const db = getFirestore(app);
 const auth = getAuth(app);
 
 export default function Page() {
-  const tabs = ['home', 'directions', 'subscriptions', 'check', 'about'] as const;
+  const tabs = ['home', 'directions', 'subscriptions', 'check', 'reset-password', 'about'] as const;
   type TabType = typeof tabs[number];
   const [activeTab, setActiveTab] = useState<TabType>('home');
   const [emailInput, setEmailInput] = useState('');
@@ -282,6 +282,40 @@ export default function Page() {
     setChecking(false);
   };
 
+  // Password Reset State
+  const [resetEmail, setResetEmail] = useState('');
+  const [resetSending, setResetSending] = useState(false);
+  const [resetMessage, setResetMessage] = useState('');
+  const [resetError, setResetError] = useState('');
+
+  // Password Reset Handler
+  const handlePasswordReset = async () => {
+    if (!resetEmail.trim() || !resetEmail.includes('@')) {
+      setResetError('Please enter a valid email address.');
+      return;
+    }
+    setResetSending(true);
+    setResetError('');
+    setResetMessage('');
+    try {
+      await sendPasswordResetEmail(auth, resetEmail.trim());
+      setResetMessage('✅ Password reset email sent! Check your inbox (and spam folder).');
+      setResetEmail('');
+    } catch (error: any) {
+      console.error('Password reset error:', error);
+      if (error.code === 'auth/user-not-found') {
+        setResetError('No account found with this email address.');
+      } else if (error.code === 'auth/invalid-email') {
+        setResetError('Invalid email address format.');
+      } else if (error.code === 'auth/too-many-requests') {
+        setResetError('Too many reset attempts. Please try again later.');
+      } else {
+        setResetError(`Error: ${error.message}`);
+      }
+    }
+    setResetSending(false);
+  };
+
   return (
     <div className="flex flex-col items-center w-full min-h-screen bg-[rgba(0,123,255,0.7)] text-white">
       <div className="w-full flex justify-center py-6">
@@ -301,7 +335,7 @@ export default function Page() {
             onClick={() => setActiveTab(tab)}
             className={`px-4 py-2 rounded-full ${activeTab === tab ? 'bg-white text-blue-700' : 'bg-blue-800 hover:bg-blue-900'}`}
           >
-            {tab === 'check' ? 'Check Applications' : tab === 'directions' ? 'Directions' : tab.charAt(0).toUpperCase() + tab.slice(1)}
+            {tab === 'check' ? 'Check Applications' : tab === 'directions' ? 'Directions' : tab === 'reset-password' ? 'Reset Password' : tab.charAt(0).toUpperCase() + tab.slice(1)}
           </button>
         ))}
       </nav>
@@ -572,6 +606,68 @@ export default function Page() {
             <div className="mt-4 text-lg">You have <strong>{applicationCount}</strong> applications left.</div>
           )}
           {checkError && <div className="mt-4 text-red-300 font-semibold">{checkError}</div>}
+        </section>
+      )}
+
+      {activeTab === 'reset-password' && (
+        <section className="mt-8 w-full max-w-xl p-6 bg-white/20 backdrop-blur-lg rounded-xl text-white">
+          <h2 className="text-2xl font-bold mb-4">Reset Your Password</h2>
+          <p className="mb-4 text-gray-200">
+            Enter your email address and we'll send you a secure link to reset your password.
+          </p>
+          <div className="space-y-4">
+            <div>
+              <label className="block text-white mb-2 font-semibold">Email Address</label>
+              <input
+                type="email"
+                value={resetEmail}
+                onChange={(e) => {
+                  setResetEmail(e.target.value);
+                  setResetError('');
+                  setResetMessage('');
+                }}
+                onKeyPress={(e) => {
+                  if (e.key === 'Enter') {
+                    handlePasswordReset();
+                  }
+                }}
+                placeholder="your@email.com"
+                className="w-full p-3 rounded-lg bg-blue-100 text-black"
+                disabled={resetSending}
+              />
+            </div>
+            <button
+              onClick={handlePasswordReset}
+              disabled={resetSending}
+              className={`w-full py-3 rounded-lg font-semibold ${
+                resetSending ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-800 hover:bg-blue-900'
+              }`}
+            >
+              {resetSending ? 'Sending...' : 'Send Reset Email'}
+            </button>
+            {resetMessage && (
+              <div className="mt-4 p-4 bg-green-500/20 border border-green-500 rounded-lg">
+                <p className="text-green-100">{resetMessage}</p>
+                <p className="text-sm text-gray-200 mt-2">
+                  Click the link in the email to set your new password. The link expires in 1 hour.
+                </p>
+              </div>
+            )}
+            {resetError && (
+              <div className="mt-4 p-4 bg-red-500/20 border border-red-500 rounded-lg">
+                <p className="text-red-100 font-semibold">{resetError}</p>
+              </div>
+            )}
+          </div>
+          <div className="mt-6 p-4 bg-white/10 rounded-lg">
+            <h3 className="font-semibold mb-2">How it works:</h3>
+            <ol className="list-decimal list-inside space-y-2 text-sm text-gray-200">
+              <li>Enter your registered email address</li>
+              <li>Check your email for a reset link (check spam if needed)</li>
+              <li>Click the link and set your new password</li>
+              <li>Return here and log in with your new password</li>
+            </ol>
+          </div>
         </section>
       )}
 
