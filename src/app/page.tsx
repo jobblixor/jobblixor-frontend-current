@@ -587,9 +587,10 @@ export default function Page() {
             </p>
             <ul className="list-disc list-inside space-y-2 text-lg ml-4">
               <li>A red alert box will appear on the page</li>
-              <li>Required fields will be highlighted in yellow</li>
-              <li>Fill in the highlighted fields with your answers</li>
-              <li>Click "Continue Automation" to resume</li>
+              <li>Click the green "Continue Automation" button on the popup</li>
+              <li>Fill out the missing fields on the Indeed page</li>
+              <li>Click the blue "Continue" button on Indeed</li>
+              <li>Jobblixor will automatically resume on the next page</li>
             </ul>
             <p className="text-lg mt-4">
               Stay on the Indeed tab during automation to catch these alerts and keep the process running smoothly.
