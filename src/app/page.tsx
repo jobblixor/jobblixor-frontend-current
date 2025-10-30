@@ -162,31 +162,25 @@ export default function Page() {
       userCredential = await signInWithEmailAndPassword(auth, formEmail, formPassword);
       setResponseViewer(["Logged in successfully! Updating your profile..."]);
     } catch (signInError: any) {
-      // FIXED: Better error messages for different scenarios
-      if (signInError.code === 'auth/user-not-found') {
-        // User doesn't exist - create new account
+      // If sign-in fails for any reason, attempt account creation
+      try {
         userCredential = await createUserWithEmailAndPassword(auth, formEmail, formPassword);
         setResponseViewer(["New account created! Setting up your profile..."]);
-      } else if (signInError.code === 'auth/wrong-password') {
-        // WRONG PASSWORD - Don't create account, show helpful message
-        setResponseViewer([
-          "❌ Incorrect password.",
-          "If you forgot your password, use the 'Reset Password' tab.",
-          "If you're trying to update your info, enter the correct password first."
-        ]);
-        setSubmitting(false);
-        return; // STOP HERE - don't try to create account
-      } else if (signInError.code === 'auth/invalid-credential') {
-        // Invalid credentials - could be wrong password or email
-        setResponseViewer([
-          "❌ Login failed. Please check your email and password.",
-          "Need to reset your password? Use the 'Reset Password' tab."
-        ]);
-        setSubmitting(false);
-        return; // STOP HERE - don't try to create account
-      } else {
-        // Some other Firebase auth error
-        throw signInError;
+      } catch (createError: any) {
+        if (createError.code === 'auth/email-already-in-use') {
+          setResponseViewer([
+            "❌ Incorrect password.",
+            "If you forgot your password, use the 'Reset Password' tab.",
+            "If you're trying to update your info, enter the correct password first."
+          ]);
+          setSubmitting(false);
+          return; // Existing user, wrong password
+        } else {
+          // Any other error, show message and stop
+          setResponseViewer([`Error creating account: ${createError.message}`]);
+          setSubmitting(false);
+          return;
+        }
       }
     }
     const user = userCredential.user;
