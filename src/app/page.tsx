@@ -39,6 +39,7 @@ export default function Page() {
   type TabType = typeof tabs[number];
   const [activeTab, setActiveTab] = useState<TabType>('home');
   const [emailInput, setEmailInput] = useState('');
+  const [passwordInput, setPasswordInput] = useState(''); // ADDED PASSWORD INPUT STATE
   const [applicationCount, setApplicationCount] = useState<number | null>(null);
   const [checking, setChecking] = useState(false);
   const [checkError, setCheckError] = useState('');
@@ -261,44 +262,57 @@ export default function Page() {
 };
 
   // (Check applications from Firebase)
+  // REPLACED WITH: Secure, authenticated version
   const handleCheckApplications = async () => {
     if (!emailInput.trim()) {
       setCheckError('Please enter a valid email address.');
       return;
     }
-    
+
+    if (!passwordInput.trim()) {
+      setCheckError('Please enter your password.');
+      return;
+    }
+
     setChecking(true);
     setCheckError('');
     setApplicationCount(null);
-    
+
     try {
-      console.log('Checking applications for:', emailInput.trim());
-      // First get UID from email mapping
-      const emailDoc = await getDoc(doc(db, "email_to_uid", emailInput.trim()));
-      console.log('emailDoc.exists:', emailDoc.exists(), emailDoc.data());
-      if (!emailDoc.exists()) {
-        setCheckError('No account found with this email address.');
-        setChecking(false);
-        return;
-      }
-      const uid = emailDoc.data().uid;
-      console.log('Found UID:', uid);
-      // Then get user data by UID
+      console.log('Authenticating and checking applications for:', emailInput.trim());
+
+      // Authenticate the user first
+      const userCredential = await signInWithEmailAndPassword(auth, emailInput.trim(), passwordInput.trim());
+      const uid = userCredential.user.uid;
+
+      console.log('Authenticated! UID:', uid);
+
+      // Now fetch data, they're authenticated so rules allow it
       const userDoc = await getDoc(doc(db, "users", uid));
-      console.log('userDoc.exists:', userDoc.exists(), userDoc.data());
       if (userDoc.exists()) {
         const userData = userDoc.data();
         const freeUsesLeft = userData.free_uses_left || 0;
-        setApplicationCount(freeUsesLeft);
         console.log('Free uses left:', freeUsesLeft);
+        setApplicationCount(freeUsesLeft);
+        setCheckError(''); // Clear any errors
       } else {
         setCheckError('User data not found.');
       }
+
+      // Sign out after checking (optional for extra security)
+      await auth.signOut();
     } catch (error: any) {
-      console.error('Error fetching user data:', error, error?.message, error?.code);
-      setCheckError(`Error: ${error?.message || 'Failed to check applications. Please try again.'}`);
+      console.error('Error checking applications:', error);
+      if (error.code === 'auth/invalid-credential' || error.code === 'auth/wrong-password') {
+        setCheckError('Incorrect email or password.');
+      } else if (error.code === 'auth/user-not-found') {
+        setCheckError('No account found with this email.');
+      } else if (error.code === 'auth/too-many-requests') {
+        setCheckError('Too many attempts. Please try again later.');
+      } else {
+        setCheckError(`Error: ${error?.message || 'Failed to check applications.'}`);
+      }
     }
-    
     setChecking(false);
   };
 
@@ -640,21 +654,51 @@ export default function Page() {
       {activeTab === 'check' && (
         <section className="mt-8 w-full max-w-xl p-6 bg-white/20 backdrop-blur-lg rounded-xl text-white">
           <h2 className="text-2xl font-bold mb-4">Check Your Application Balance</h2>
-          <p className="mb-2">Enter your email to check how many applications you have left.</p>
-          <input
-            type="email"
-            value={emailInput}
-            onChange={(e) => setEmailInput(e.target.value)}
-            placeholder="Enter your email"
-            className="w-full p-3 rounded-lg bg-blue-100 text-black mb-4"
-          />
-          <button onClick={handleCheckApplications} className="bg-blue-800 px-4 py-2 rounded-md hover:bg-blue-900">
-            {checking ? 'Checking...' : 'Check Now'}
-          </button>
+          <p className="mb-4">Enter your email and password to securely check how many applications you have left.</p>
+          <div className="space-y-4">
+            <div>
+              <label className="block text-white mb-2 font-semibold">Email</label>
+              <input
+                type="email"
+                value={emailInput}
+                onChange={(e) => setEmailInput(e.target.value)}
+                placeholder="your@email.com"
+                className="w-full p-3 rounded-lg bg-blue-100 text-black"
+              />
+            </div>
+            <div>
+              <label className="block text-white mb-2 font-semibold">Password</label>
+              <input
+                type="password"
+                value={passwordInput}
+                onChange={(e) => setPasswordInput(e.target.value)}
+                placeholder="Enter your password"
+                className="w-full p-3 rounded-lg bg-blue-100 text-black"
+                onKeyPress={(e) => {
+                  if (e.key === 'Enter') {
+                    handleCheckApplications();
+                  }
+                }}
+              />
+            </div>
+            <button
+              onClick={handleCheckApplications}
+              className="w-full bg-blue-800 px-4 py-3 rounded-lg hover:bg-blue-900 font-semibold"
+              disabled={checking}
+            >
+              {checking ? 'Checking...' : 'Check Now'}
+            </button>
+          </div>
           {applicationCount !== null && (
-            <div className="mt-4 text-lg">You have <strong>{applicationCount}</strong> applications left.</div>
+            <div className="mt-6 p-4 bg-green-500/20 border border-green-500 rounded-lg">
+              <p className="text-lg text-center">You have <strong className="text-2xl">{applicationCount}</strong> applications left.</p>
+            </div>
           )}
-          {checkError && <div className="mt-4 text-red-300 font-semibold">{checkError}</div>}
+          {checkError && (
+            <div className="mt-4 p-4 bg-red-500/20 border border-red-500 rounded-lg">
+              <p className="text-red-100 font-semibold">{checkError}</p>
+            </div>
+          )}
         </section>
       )}
 
