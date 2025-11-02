@@ -272,26 +272,31 @@ export default function Page() {
     setApplicationCount(null);
     
     try {
+      console.log('Checking applications for:', emailInput.trim());
       // First get UID from email mapping
       const emailDoc = await getDoc(doc(db, "email_to_uid", emailInput.trim()));
+      console.log('emailDoc.exists:', emailDoc.exists(), emailDoc.data());
       if (!emailDoc.exists()) {
         setCheckError('No account found with this email address.');
         setChecking(false);
         return;
       }
       const uid = emailDoc.data().uid;
+      console.log('Found UID:', uid);
       // Then get user data by UID
       const userDoc = await getDoc(doc(db, "users", uid));
+      console.log('userDoc.exists:', userDoc.exists(), userDoc.data());
       if (userDoc.exists()) {
         const userData = userDoc.data();
         const freeUsesLeft = userData.free_uses_left || 0;
         setApplicationCount(freeUsesLeft);
+        console.log('Free uses left:', freeUsesLeft);
       } else {
         setCheckError('User data not found.');
       }
-    } catch (error) {
-      console.error('Error fetching user data:', error);
-      setCheckError('Failed to check applications. Please try again.');
+    } catch (error: any) {
+      console.error('Error fetching user data:', error, error?.message, error?.code);
+      setCheckError(`Error: ${error?.message || 'Failed to check applications. Please try again.'}`);
     }
     
     setChecking(false);
