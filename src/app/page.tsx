@@ -476,9 +476,8 @@ export default function Page() {
                   <option value="skip">Always Skip</option>
                 </select>
               </div>
-
-              {/* Resume upload field only */}
-              <div>
+              {/* Resume upload field - FULL WIDTH */}
+              <div className="md:col-span-2">
                 <label className="block text-white mb-1">Resume (PDF)</label>
                 <input name="resume" type="file" accept="application/pdf" className="w-full p-3 rounded-lg bg-blue-100 text-black" />
               </div>
