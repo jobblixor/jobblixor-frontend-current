@@ -444,14 +444,20 @@ export default function Page() {
               </div>
               <div>
                 <label className="block text-white mb-1">Years of Experience</label>
-                <select name="years_experience" className="w-full p-3 rounded-lg bg-blue-100 text-black">
-                  <option value="">Select</option>
-                  <option value="0">0</option>
-                  <option value="1+">1+</option>
-                  <option value="2+">2+</option>
-                  <option value="5+">5+</option>
-                  <option value="10+">10+</option>
-                </select>
+                <input 
+                  name="years_experience" 
+                  type="number" 
+                  min="0" 
+                  max="99" 
+                  placeholder="Enter years (e.g., 5)" 
+                  className="w-full p-3 rounded-lg bg-blue-100 text-black"
+                  onKeyPress={(e) => {
+                    // Only allow numbers
+                    if (!/[0-9]/.test(e.key)) {
+                      e.preventDefault();
+                    }
+                  }}
+                />
               </div>
               <div>
                 <label className="block text-white mb-1">Veteran Status</label>
