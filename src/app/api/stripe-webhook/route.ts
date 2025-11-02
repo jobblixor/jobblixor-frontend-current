@@ -65,7 +65,16 @@ export async function POST(request: NextRequest) {
             [process.env.PRICE_ELITE!]: 'elite',
           };
 
-          await db.collection('users').doc(customer.email!).set({
+          // NEW: Look up UID from email
+          const emailDoc = await db.collection('email_to_uid').doc(customer.email!).get();
+          if (!emailDoc.exists) {
+            console.error('No UID mapping found for email:', customer.email);
+            break;
+          }
+          const uid = emailDoc.data()!.uid;
+
+          // Use UID instead of email
+          await db.collection('users').doc(uid).set({
             email: customer.email,
             stripe_customer_id: customer.id,
             subscription_status: subscription.status,
@@ -75,7 +84,6 @@ export async function POST(request: NextRequest) {
             applications_used_this_period: 0,
             current_period_end: (subscription as any).current_period_end,
             updated_at: new Date(),
-            created_at: new Date(),
           }, { merge: true });
         }
         break;
@@ -99,7 +107,15 @@ export async function POST(request: NextRequest) {
           [process.env.PRICE_ELITE!]: 'elite',
         };
 
-        const userRef = db.collection('users').doc(customer.email!);
+        // NEW: Look up UID from email
+        const emailDoc = await db.collection('email_to_uid').doc(customer.email!).get();
+        if (!emailDoc.exists) {
+          console.error('No UID mapping found for email:', customer.email);
+          break;
+        }
+        const uid = emailDoc.data()!.uid;
+
+        const userRef = db.collection('users').doc(uid); // Use UID here
         const userDoc = await userRef.get();
         const currentData = userDoc.data();
         
@@ -125,7 +141,15 @@ export async function POST(request: NextRequest) {
         const subscription = event.data.object as Stripe.Subscription;
         const customer = await stripe.customers.retrieve(subscription.customer as string) as { id: string; email: string };
         
-        await db.collection('users').doc(customer.email!).update({
+        // NEW: Look up UID from email
+        const emailDoc = await db.collection('email_to_uid').doc(customer.email!).get();
+        if (!emailDoc.exists) {
+          console.error('No UID mapping found for email:', customer.email);
+          break;
+        }
+        const uid = emailDoc.data()!.uid;
+        
+        await db.collection('users').doc(uid).update({
           subscription_status: 'canceled',
           updated_at: new Date(),
         });
@@ -136,7 +160,15 @@ export async function POST(request: NextRequest) {
         const invoice = event.data.object as Stripe.Invoice;
         const customer = await stripe.customers.retrieve(invoice.customer as string) as { id: string; email: string };
         
-        await db.collection('users').doc(customer.email!).update({
+        // NEW: Look up UID from email
+        const emailDoc = await db.collection('email_to_uid').doc(customer.email!).get();
+        if (!emailDoc.exists) {
+          console.error('No UID mapping found for email:', customer.email);
+          break;
+        }
+        const uid = emailDoc.data()!.uid;
+        
+        await db.collection('users').doc(uid).update({
           subscription_status: 'past_due',
           updated_at: new Date(),
         });
